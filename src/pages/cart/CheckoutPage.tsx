@@ -1,0 +1,59 @@
+import { useState, type FormEvent } from 'react'
+import { ArrowLeft, ArrowRight, Loader2, MapPin, Phone, ShoppingBag } from 'lucide-react'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { useAuthStore } from '@/features/auth/model/auth.store'
+import { getCartSubtotal, useCartStore } from '@/features/cart/model/cart.store'
+import { useCreateOrder } from '@/features/orders/hooks/use-orders'
+import { normalizeApiError } from '@/shared/api/api-error'
+import { formatMoney } from '@/shared/lib/format'
+
+export function CheckoutPage() {
+  const navigate = useNavigate()
+  const user = useAuthStore((state) => state.user)
+  const items = useCartStore((state) => state.items)
+  const clearCart = useCartStore((state) => state.clearCart)
+  const createOrder = useCreateOrder()
+  const [phone, setPhone] = useState(user?.phone ?? '')
+  const [deliveryAddress, setDeliveryAddress] = useState('')
+  const [note, setNote] = useState('')
+  const [error, setError] = useState('')
+  const subtotal = getCartSubtotal(items)
+
+  if (!items.length) return <Navigate to="/cart" replace />
+
+  async function submit(event: FormEvent) {
+    event.preventDefault()
+    setError('')
+    try {
+      const order = await createOrder.mutateAsync({
+        items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+        ...(phone.trim() ? { phone: phone.trim() } : {}),
+        ...(deliveryAddress.trim() ? { deliveryAddress: deliveryAddress.trim() } : {}),
+        ...(note.trim() ? { note: note.trim() } : {}),
+      })
+      clearCart()
+      navigate(`/order-success/${order.id}`, { replace: true })
+    } catch (cause) {
+      setError(normalizeApiError(cause).message)
+    }
+  }
+
+  return <main className="page-container shop-page shop-checkout-page">
+    <Link to="/cart" className="shop-back"><ArrowLeft size={17} /> Savatga qaytish</Link>
+    <h1 className="shop-page-title mt-2">Buyurtma rasmiylashtirish</h1>
+    <form onSubmit={submit} className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
+      <div className="glass-card space-y-5 p-4 sm:p-6">
+        <label className="shop-field"><span><Phone size={17} /> Telefon raqam</span><input type="tel" maxLength={30} value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+998 90 123 45 67" /></label>
+        <label className="shop-field"><span><MapPin size={17} /> Yetkazib berish manzili</span><input maxLength={255} value={deliveryAddress} onChange={(event) => setDeliveryAddress(event.target.value)} placeholder="Manzilni kiriting" /></label>
+        <label className="shop-field"><span>Izoh (ixtiyoriy)</span><textarea maxLength={500} value={note} onChange={(event) => setNote(event.target.value)} placeholder="Masalan: qo‘ng‘iroq qiling..." /></label>
+      </div>
+      <aside className="shop-checkout-summary glass-card">
+        <h2>Buyurtmangiz</h2>
+        <div className="space-y-2">{items.map((item) => <p key={item.productId}><span>{item.name} × {item.quantity}</span><strong>{formatMoney(Number(item.price) * item.quantity)}</strong></p>)}</div>
+        <div className="shop-checkout-total"><span>Jami:</span><strong>{formatMoney(subtotal)}</strong></div>
+        {error ? <p role="alert" className="text-sm font-semibold text-red-600">{error}</p> : null}
+        <button type="submit" disabled={createOrder.isPending} className="shop-primary-button w-full">{createOrder.isPending ? <Loader2 className="size-4 animate-spin" /> : <ShoppingBag className="size-4" />}{createOrder.isPending ? 'Yuborilmoqda...' : <>Tasdiqlash <ArrowRight size={17} /></>}</button>
+      </aside>
+    </form>
+  </main>
+}

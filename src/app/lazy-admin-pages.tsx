@@ -1,0 +1,16 @@
+import { lazy } from 'react'
+
+export const AdminEntryPage = lazy(() => import('@/pages/admin/AdminEntryPage').then((module) => ({ default: module.AdminEntryPage })))
+export const AdminCategoriesPage = lazy(() => import('@/pages/admin/AdminCategoriesPage').then((module) => ({ default: module.AdminCategoriesPage })))
+export const AdminProductsPage = lazy(() => import('@/pages/admin/AdminProductsPage').then((module) => ({ default: module.AdminProductsPage })))
+export const AdminTodayPage = lazy(() => import('@/pages/admin/AdminTodayPage').then((module) => ({ default: module.AdminTodayPage })))
+export const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage').then((module) => ({ default: module.AdminOrdersPage })))
+export const AdminOrderDetailPage = lazy(() => import('@/pages/admin/AdminOrderDetailPage').then((module) => ({ default: module.AdminOrderDetailPage })))
+export const AdminWorkHoursPage = lazy(() => import('@/pages/admin/AdminWorkHoursPage').then((module) => ({ default: module.AdminWorkHoursPage })))
+export const MenuPage = lazy(() => import('@/pages/menu/MenuPage').then((module) => ({ default: module.MenuPage })))
+export const ProductDetailPage = lazy(() => import('@/pages/product/ProductDetailPage').then((module) => ({ default: module.ProductDetailPage })))
+export const AdminDetailsPage = lazy(() => import('@/pages/super-admin/AdminDetailsPage').then((module) => ({ default: module.AdminDetailsPage })))
+export const AdminsPage = lazy(() => import('@/pages/super-admin/AdminsPage').then((module) => ({ default: module.AdminsPage })))
+export const SuperAdminDashboardPage = lazy(() => import('@/pages/super-admin/SuperAdminDashboardPage').then((module) => ({ default: module.SuperAdminDashboardPage })))
+export const SuperAdminProfilePage = lazy(() => import('@/pages/super-admin/SuperAdminProfilePage').then((module) => ({ default: module.SuperAdminProfilePage })))
+export const SuperAdminLayout = lazy(() => import('@/shared/layout/SuperAdminLayout').then((module) => ({ default: module.SuperAdminLayout })))
