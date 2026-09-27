@@ -27,6 +27,7 @@ export function AdminCard({ admin }: { admin: AdminUser }) {
         <div className="flex min-w-0 items-center gap-2"><Phone className="size-4 shrink-0 text-indigo-500" /><dd className="truncate">{admin.phone ?? 'Telefon yo‘q'}</dd></div>
         <div className="flex min-w-0 items-center gap-2"><Send className="size-4 shrink-0 text-indigo-500" /><dd className="truncate">ID: {admin.telegramId}</dd></div>
       </dl>
+      <AdminActions admin={admin} mode="demote-button" />
       {editing ? <EditAdminDialog admin={admin} open={editing} onOpenChange={setEditing} /> : null}
     </article>
   )

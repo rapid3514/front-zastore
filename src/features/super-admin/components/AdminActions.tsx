@@ -21,13 +21,15 @@ type ActionType = "block" | "unblock" | "demote" | null;
 interface AdminActionsProps {
   admin: AdminUser;
   showView?: boolean;
-  onEdit: () => void;
+  mode?: "menu" | "demote-button";
+  onEdit?: () => void;
   onDemoted?: () => void;
 }
 
 export function AdminActions({
   admin,
   showView = true,
+  mode = "menu",
   onEdit,
   onDemoted,
 }: AdminActionsProps) {
@@ -68,51 +70,66 @@ export function AdminActions({
 
   return (
     <>
-      <details className="sa-actions relative">
-        <summary
-          className="sa-icon-button cursor-pointer list-none"
-          aria-label={`${admin.firstName} uchun amallar`}
+      {mode === "demote-button" ? (
+        <button
+          type="button"
+          onClick={() => setConfirmation("demote")}
+          className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 text-sm font-extrabold text-red-600 transition hover:bg-red-100"
         >
-          <MoreHorizontal className="size-5" />
-        </summary>
-        <div className="absolute right-0 top-12 z-20 w-64 rounded-2xl border border-white/70 bg-white/95 p-2 shadow-2xl backdrop-blur-xl">
-          {showView ? (
-            <Link
-              to={`/super-admin/admins/${admin.id}`}
+          <ShieldMinus className="size-4" />
+          Adminlik huquqini bekor qilish
+        </button>
+      ) : (
+        <details className="sa-actions relative">
+          <summary
+            className="sa-icon-button cursor-pointer list-none"
+            aria-label={`${admin.firstName} uchun amallar`}
+          >
+            <MoreHorizontal className="size-5" />
+          </summary>
+          <div className="absolute right-0 top-12 z-20 w-64 rounded-2xl border border-white/70 bg-white/95 p-2 shadow-2xl backdrop-blur-xl">
+            {showView ? (
+              <Link
+                to={`/super-admin/admins/${admin.id}`}
+                className="sa-action-item"
+              >
+                <Eye className="size-4" />
+                Ko‘rish
+              </Link>
+            ) : null}
+            <button
+              type="button"
+              onClick={() => onEdit?.()}
               className="sa-action-item"
             >
-              <Eye className="size-4" />
-              Ko‘rish
-            </Link>
-          ) : null}
-          <button type="button" onClick={onEdit} className="sa-action-item">
-            <Pencil className="size-4" />
-            Tahrirlash
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              setConfirmation(admin.isBlocked ? "unblock" : "block")
-            }
-            className="sa-action-item"
-          >
-            {admin.isBlocked ? (
-              <ShieldCheck className="size-4" />
-            ) : (
-              <Ban className="size-4" />
-            )}
-            {admin.isBlocked ? "Blokdan chiqarish" : "Bloklash"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setConfirmation("demote")}
-            className="sa-action-item text-red-600 hover:bg-red-50"
-          >
-            <ShieldMinus className="size-4" />
-            Adminlik huquqini bekor qilish
-          </button>
-        </div>
-      </details>
+              <Pencil className="size-4" />
+              Tahrirlash
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setConfirmation(admin.isBlocked ? "unblock" : "block")
+              }
+              className="sa-action-item"
+            >
+              {admin.isBlocked ? (
+                <ShieldCheck className="size-4" />
+              ) : (
+                <Ban className="size-4" />
+              )}
+              {admin.isBlocked ? "Blokdan chiqarish" : "Bloklash"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setConfirmation("demote")}
+              className="sa-action-item text-red-600 hover:bg-red-50"
+            >
+              <ShieldMinus className="size-4" />
+              Adminlik huquqini bekor qilish
+            </button>
+          </div>
+        </details>
+      )}
 
       <ConfirmDialog
         open={confirmation !== null}
