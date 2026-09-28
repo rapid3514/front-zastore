@@ -1,6 +1,8 @@
 import { useEffect, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
+import { cn } from '@/shared/lib/cn'
 
 interface ModalShellProps {
   open: boolean
@@ -11,6 +13,9 @@ interface ModalShellProps {
 }
 
 export function ModalShell({ open, title, description, children, onOpenChange }: ModalShellProps) {
+  const location = useLocation()
+  const isAdminPanel = location.pathname.startsWith('/admin')
+
   useEffect(() => {
     if (!open) return
     const onKeyDown = (event: KeyboardEvent) => {
@@ -23,7 +28,7 @@ export function ModalShell({ open, title, description, children, onOpenChange }:
   if (!open) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/35 p-0 backdrop-blur-sm sm:items-center sm:p-5" onMouseDown={() => onOpenChange(false)}>
+    <div className={cn('fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/35 p-0 backdrop-blur-sm sm:items-center sm:p-5', isAdminPanel && 'admin-modal-surface')} onMouseDown={() => onOpenChange(false)}>
       <div role="dialog" aria-modal="true" aria-labelledby="sa-dialog-title" className="sa-dialog sa-glass max-h-[90dvh] w-full max-w-lg overflow-y-auto rounded-t-[1.75rem] p-5 sm:rounded-[1.75rem] sm:p-6" onMouseDown={(event) => event.stopPropagation()}>
         <div className="flex items-start gap-4">
           <div className="min-w-0 flex-1">

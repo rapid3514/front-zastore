@@ -31,9 +31,9 @@ export function AdminEntryPage() {
   const { status, user, logout } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
-  if (status === 'idle' || status === 'loading') return <AuthLoadingPage />
-  if (status !== 'authenticated') return <TelegramRequiredPage />
-  if (user?.role !== 'ADMIN') return <AccessDeniedPage role={user?.role} />
+  if (status === 'idle' || status === 'loading') return <div className="lumiera-auth-shell"><AuthLoadingPage /></div>
+  if (status !== 'authenticated') return <div className="lumiera-auth-shell"><TelegramRequiredPage /></div>
+  if (user?.role !== 'ADMIN') return <div className="lumiera-auth-shell"><AccessDeniedPage role={user?.role} /></div>
 
   async function handleLogout() {
     await logout()
