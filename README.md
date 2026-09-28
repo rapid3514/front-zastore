@@ -1,6 +1,6 @@
-# Zastore Customer Mini App
+# Zastore Shop Mini App
 
-Telegram food ordering Mini App frontend. Today va Menu sahifalari public mock ma’lumotlar bilan ishlaydi; History va Profile mavjud Telegram autentifikatsiyasi orqali himoyalangan.
+Telegram orqali ishlaydigan do‘kon frontend ilovasi. Katalog, mahsulotlar, buyurtmalar, ish vaqti va admin hisoboti backend API ma’lumotlari bilan ishlaydi.
 
 ## Development
 
@@ -21,4 +21,4 @@ npm run lint
 npm run build
 ```
 
-Real Telegram `initData` olish uchun frontendni public HTTPS URL orqali oching va URL’ni bot Mini App sozlamalariga ulang. Lokal ishga tushirishda API so‘rovlari shu HTTPS manzil orqali Vite proxy yordamida `localhost:3001` backendga yetadi; alohida API tunnel kerak emas. Production hostingda ham `/api/v1` backendga yo‘naltirilishi kerak. Oddiy brauzerda Today va Menu public UI ko‘rinadi; protected bo‘limlar Telegram orqali kirishni so‘raydi. Fake login yoki auth bypass mavjud emas.
+Real Telegram `initData` olish uchun frontendni public HTTPS URL orqali oching va URL’ni bot Mini App sozlamalariga ulang. Lokal ishga tushirishda API so‘rovlari shu HTTPS manzil orqali Vite proxy yordamida `localhost:3001` backendga yetadi; alohida API tunnel kerak emas. Production hostingda ham `/api/v1` backendga yo‘naltirilishi kerak. Admin va mijoz bo‘limlari Telegram autentifikatsiyasi hamda backend rollari bilan himoyalangan. Fake login yoki auth bypass mavjud emas.

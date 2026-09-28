@@ -64,12 +64,36 @@ const ordersPageSchema = z.object({
 })
 export type OrdersPage = z.infer<typeof ordersPageSchema>
 
+const orderManagementSummarySchema = z.object({
+  orders: z.object({
+    total: z.number().int().nonnegative(),
+    pendingConfirmation: z.number().int().nonnegative(),
+    confirmed: z.number().int().nonnegative(),
+    processing: z.number().int().nonnegative(),
+    completed: z.number().int().nonnegative(),
+    cancelled: z.number().int().nonnegative(),
+    expired: z.number().int().nonnegative(),
+    completedRevenue: z.string(),
+  }),
+  catalog: z.object({
+    productsTotal: z.number().int().nonnegative(),
+    productsActive: z.number().int().nonnegative(),
+    productsAvailable: z.number().int().nonnegative(),
+    categoriesTotal: z.number().int().nonnegative(),
+    categoriesActive: z.number().int().nonnegative(),
+  }),
+  customersWithOrders: z.number().int().nonnegative(),
+  recentOrders: z.array(orderSchema),
+})
+export type OrderManagementSummary = z.infer<typeof orderManagementSummarySchema>
+
 export const orderKeys = {
   all: ['orders'] as const,
   mine: (params: OrdersParams) => [...orderKeys.all, 'mine', params] as const,
   mineDetail: (id: string) => [...orderKeys.all, 'mine-detail', id] as const,
   manage: (params: OrdersParams) => [...orderKeys.all, 'manage', params] as const,
   manageDetail: (id: string) => [...orderKeys.all, 'manage-detail', id] as const,
+  manageSummary: () => [...orderKeys.all, 'manage-summary'] as const,
 }
 
 export const ordersApi = {
@@ -96,6 +120,10 @@ export const ordersApi = {
   async manageById(id: string) {
     const { data } = await api.get<unknown>(`/orders/manage/${id}`)
     return orderSchema.parse(data)
+  },
+  async manageSummary() {
+    const { data } = await api.get<unknown>('/orders/manage/summary')
+    return orderManagementSummarySchema.parse(data)
   },
   async confirm(id: string) {
     const { data } = await api.patch<unknown>(`/orders/${id}/confirm`)

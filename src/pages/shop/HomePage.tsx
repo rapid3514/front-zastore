@@ -1,4 +1,4 @@
-import { ArrowRight, Search, Sparkles } from 'lucide-react'
+import { ArrowRight, Search } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useProducts } from '@/features/catalog/hooks/use-products'
 import { CategoryList } from '@/features/shop/components/CategoryList'
@@ -14,18 +14,6 @@ export function HomePage() {
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-3"><h2 className="shop-section-title">Kategoriyalar</h2><Link to="/catalog" className="shop-more">Barchasi <ArrowRight size={15} /></Link></div>
         <CategoryList />
-      </section>
-
-      <section className="shop-hero">
-        <div className="shop-hero-copy">
-          <span className="shop-hero-kicker"><Sparkles size={14} /> YANGI KOLLEKSIYA</span>
-          <h1>O‘zingizni yanada <em>go‘zal</em> his qiling ♡</h1>
-          <p>Siz uchun tanlangan kiyim, kosmetika va aksessuarlar.</p>
-          <Link to="/catalog" className="shop-hero-button">Ko‘rish <ArrowRight size={16} /></Link>
-        </div>
-        <div className="shop-hero-art" role="img" aria-label="Do‘kon mahsulotlari">
-          <img src="/images/zastore-collection.png" alt="Pushti kolleksiya mahsulotlari" />
-        </div>
       </section>
 
       <section className="space-y-4">

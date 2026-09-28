@@ -3,7 +3,7 @@ import { FolderPlus, PackagePlus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useManageProducts, useProductMutations } from '@/features/catalog/hooks/use-products'
 import { catalogError } from '@/features/catalog/lib/catalog-error'
-import { formatPrice } from '@/shared/mock/food-products'
+import { formatMoney } from '@/shared/lib/format'
 import { useToastStore } from '@/shared/ui/toast-store'
 import { useState } from 'react'
 
@@ -29,7 +29,7 @@ export function AdminTodayPage() {
       {products.data?.data.length === 0 ? <p className="sa-glass rounded-2xl p-5 text-slate-600">Hozircha mahsulotlar mavjud emas. Avval kategoriya va mahsulot yarating.</p> : null}
       <div className="grid gap-3 md:grid-cols-2">{products.data?.data.map((product) => (
         <article key={product.id} className="sa-glass flex min-w-0 items-center justify-between gap-3 rounded-2xl p-4">
-          <div className="min-w-0"><h2 className="truncate font-extrabold text-slate-950">{product.name}</h2><p className="truncate text-sm text-slate-500">{product.category.name} · {formatPrice(Number(product.price))}</p></div>
+          <div className="min-w-0"><h2 className="truncate font-extrabold text-slate-950">{product.name}</h2><p className="truncate text-sm text-slate-500">{product.category.name} · {formatMoney(product.price)}</p></div>
           <Button type="button" variant={product.isAvailable ? 'outline' : 'default'} disabled={update.isPending} onClick={() => void toggle(product.id, product.isAvailable)} className="shrink-0">{product.isAvailable ? 'Mavjud' : 'Mavjud emas'}</Button>
         </article>
       ))}</div>

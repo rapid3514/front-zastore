@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
-import { BookOpenText, CalendarDays, Clock3, FolderOpen, LogOut, Moon, Package, ShoppingBag, Sun, UserRound, UtensilsCrossed } from 'lucide-react'
+import { BarChart3, CalendarDays, Clock3, FolderOpen, LogOut, Moon, Package, Shirt, ShoppingBag, Sun, UserRound } from 'lucide-react'
 import { AccessDeniedPage } from '@/features/auth/ui/AccessDeniedPage'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { useTheme } from '@/features/theme/hooks/use-theme'
@@ -10,7 +10,7 @@ import { cn } from '@/shared/lib/cn'
 
 const navigation: Array<{ to: string; label: string; icon: LucideIcon; end?: boolean }> = [
   { to: '/admin', label: 'Bugun', icon: CalendarDays, end: true },
-  { to: '/admin/menu', label: 'Menyu', icon: BookOpenText },
+  { to: '/admin/reports', label: 'Hisobot', icon: BarChart3 },
   { to: '/admin/products', label: 'Mahsulotlar', icon: Package },
   { to: '/admin/categories', label: 'Kategoriyalar', icon: FolderOpen },
   { to: '/admin/orders', label: 'Buyurtmalar', icon: ShoppingBag },
@@ -41,9 +41,9 @@ export function AdminEntryPage() {
   }
 
   return (
-    <div className="super-admin-layout">
+    <div className="admin-layout">
       <aside className="sa-sidebar">
-        <div className="flex items-center gap-3 px-2"><span className="grid size-11 place-items-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"><UtensilsCrossed className="size-6" /></span><div><p className="text-lg font-black tracking-tight text-slate-950">Zastore</p><p className="text-xs font-semibold text-slate-500">Admin panel</p></div></div>
+        <div className="flex items-center gap-3 px-2"><span className="admin-brand-mark"><Shirt className="size-6" /></span><div><p className="text-lg font-black tracking-tight text-slate-950">Zastore</p><p className="text-xs font-semibold text-slate-500">Boutique admin</p></div></div>
         <nav className="mt-9 grid gap-2" aria-label="Admin navigatsiyasi"><Navigation /></nav>
         <div className="mt-auto border-t border-slate-200/80 pt-5">
           <div className="flex items-center gap-3 px-2"><span className="sa-avatar size-10 rounded-xl">{user.firstName.charAt(0).toLocaleUpperCase('uz')}</span><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-800">{user.firstName} {user.lastName}</p><p className="mt-1 text-xs text-slate-500">ADMIN</p></div></div>

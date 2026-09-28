@@ -30,6 +30,10 @@ export function useManageOrder(id: string) {
   return useQuery({ queryKey: orderKeys.manageDetail(id), queryFn: () => ordersApi.manageById(id), enabled: Boolean(id) })
 }
 
+export function useManageOrderSummary() {
+  return useQuery({ queryKey: orderKeys.manageSummary(), queryFn: ordersApi.manageSummary })
+}
+
 export function useOrderAdminMutations() {
   const client = useQueryClient()
   const refresh = (_data: unknown, id: string) => {

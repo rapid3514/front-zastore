@@ -16,7 +16,7 @@ import { HomePage } from '@/pages/shop/HomePage'
 import { CatalogPage } from '@/pages/shop/CatalogPage'
 import { ShopProductDetailsPage } from '@/pages/shop/ShopProductDetailsPage'
 import { ShopOrdersPage } from '@/pages/shop/ShopOrdersPage'
-import { AdminCategoriesPage, AdminDetailsPage, AdminEntryPage, AdminOrderDetailPage, AdminOrdersPage, AdminProductsPage, AdminTodayPage, AdminWorkHoursPage, AdminsPage, MenuPage, ProductDetailPage, SuperAdminDashboardPage, SuperAdminLayout, SuperAdminProfilePage } from './lazy-admin-pages'
+import { AdminCategoriesPage, AdminDetailsPage, AdminEntryPage, AdminOrderDetailPage, AdminOrdersPage, AdminProductsPage, AdminReportsPage, AdminTodayPage, AdminWorkHoursPage, AdminsPage, SuperAdminDashboardPage, SuperAdminLayout, SuperAdminProfilePage } from './lazy-admin-pages'
 
 export const router = createBrowserRouter([{
   element: <Suspense fallback={<AppLoader />}><RoleRedirect /></Suspense>,
@@ -30,7 +30,6 @@ export const router = createBrowserRouter([{
       { path: 'order-success/:id', element: <OrderSuccessPage /> },
       { path: 'orders', element: <ShopOrdersPage /> },
       { path: 'profile', element: <ProfilePage /> },
-      { path: 'menu', element: <Navigate to="/catalog" replace /> },
       { path: 'orders/:id', element: <Navigate to="/orders" replace /> },
       { path: 'auth/loading', element: <AuthLoadingPage /> },
       { path: 'auth/error', element: <AuthErrorPage /> },
@@ -39,8 +38,7 @@ export const router = createBrowserRouter([{
     ] },
     { path: '/admin', element: <AdminEntryPage />, children: [
       { index: true, element: <AdminTodayPage /> },
-      { path: 'menu', element: <MenuPage /> },
-      { path: 'product/:id', element: <ProductDetailPage /> },
+      { path: 'reports', element: <AdminReportsPage /> },
       { path: 'products', element: <AdminProductsPage /> },
       { path: 'categories', element: <AdminCategoriesPage /> },
       { path: 'orders', element: <AdminOrdersPage /> },

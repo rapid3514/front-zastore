@@ -29,9 +29,9 @@ export function SuperAdminLayout() {
   }
 
   return (
-    <div className="super-admin-layout">
+    <div className="super-admin-layout super-admin-executive">
       <aside className="sa-sidebar">
-        <div className="flex items-center gap-3 px-2"><span className="grid size-11 place-items-center rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-600/20"><ShieldCheck className="size-6" /></span><div><p className="text-lg font-black tracking-tight text-slate-950">Zastore</p><p className="text-xs font-semibold text-slate-500">Platform</p></div></div>
+        <div className="flex items-center gap-3 px-2"><span className="super-admin-brand-mark"><ShieldCheck className="size-6" /></span><div><p className="text-lg font-black tracking-tight text-slate-950">Zastore</p><p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Boshqaruv markazi</p></div></div>
         <nav className="mt-9 grid gap-2" aria-label="Super admin navigatsiyasi"><NavItems /></nav>
         <div className="mt-auto border-t border-slate-200/80 pt-5">
           <p className="truncate px-3 text-sm font-bold text-slate-800">{user?.firstName} {user?.lastName}</p>

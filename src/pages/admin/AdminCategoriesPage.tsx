@@ -68,7 +68,7 @@ export function AdminCategoriesPage() {
 
   return (
     <div className="sa-page-container space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-4"><div><p className="sa-eyebrow">Katalog boshqaruvi</p><h1 className="sa-page-title">Kategoriyalar</h1><p className="sa-page-description">Mahsulotlar customer menyusida shu kategoriyalar bo‘yicha ko‘rinadi.</p></div><Button type="button" onClick={() => setFormCategory(null)}><Plus className="size-4" />Kategoriya qo‘shish</Button></header>
+      <header className="flex flex-wrap items-end justify-between gap-4"><div><p className="sa-eyebrow">Katalog boshqaruvi</p><h1 className="sa-page-title">Kategoriyalar</h1><p className="sa-page-description">Mahsulotlar mijoz katalogida shu kategoriyalar bo‘yicha ko‘rinadi.</p></div><Button type="button" onClick={() => setFormCategory(null)}><Plus className="size-4" />Kategoriya qo‘shish</Button></header>
       <label className="sa-search max-w-md"><Search className="size-4 text-slate-400" /><span className="sr-only">Kategoriya qidirish</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Kategoriya qidirish..." /></label>
       {categories.isLoading ? <p className="sa-glass rounded-2xl p-5">Kategoriyalar yuklanmoqda...</p> : null}
       {categories.isError ? <div className="sa-glass rounded-2xl p-5 text-red-600">Kategoriyalarni yuklashda xatolik yuz berdi. <button type="button" className="font-bold underline" onClick={() => void categories.refetch()}>Qayta urinish</button></div> : null}
