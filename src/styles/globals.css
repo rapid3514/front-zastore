@@ -1211,7 +1211,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 .admin-layout::before {
-  background: #f5dfe5 url('/images/lumiera-background.png') center / cover no-repeat;
+  background: #f5dfe5 url('/images/lumiera-background.jpg') center / cover no-repeat;
   filter: saturate(.82);
 }
 
@@ -1476,7 +1476,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .lumiera-auth-shell::before {
   z-index: -2;
   opacity: 1;
-  background: #f3b8cb url('/images/lumiera-background.png') center center / cover no-repeat;
+  background: #f3b8cb url('/images/lumiera-background.jpg') center center / cover no-repeat;
   filter: saturate(.92) brightness(1.04);
   transform: none;
 }
@@ -1499,7 +1499,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   --shop-accent-strong: var(--lumiera-pink);
   --shop-pink-soft: rgba(255, 224, 234, .74);
   --shop-panel: var(--lumiera-glass);
-  --shop-background-art: url('/images/lumiera-background.png');
+  --shop-background-art: url('/images/lumiera-background.jpg');
   background: #f8d8e4;
 }
 
@@ -1558,7 +1558,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .shop-success-page::before {
   opacity: .72;
-  background: url('/images/lumiera-background.png') center center / cover no-repeat;
+  background: url('/images/lumiera-background.jpg') center center / cover no-repeat;
   filter: saturate(.95) brightness(1.03);
 }
 
