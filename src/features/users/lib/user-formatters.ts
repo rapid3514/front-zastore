@@ -29,5 +29,6 @@ export function formatLastSeen(lastSeenAt: string | null, isOnline: boolean) {
 export function roleLabel(role: ManagedUserRole) {
   if (role === 'SUPER_ADMIN') return 'Super admin'
   if (role === 'ADMIN') return 'Admin'
+  if (role === 'GUEST') return 'Guest'
   return 'Customer'
 }

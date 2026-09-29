@@ -11,18 +11,18 @@ const userListItemSchema = z.object({
   username: z.string().nullable().optional(),
   telegramId: telegramIdSchema,
   avatarUrl: z.string().nullable().optional(),
-  role: z.enum(['CUSTOMER', 'ADMIN', 'SUPER_ADMIN']),
+  role: z.enum(['GUEST', 'CUSTOMER', 'ADMIN', 'SUPER_ADMIN']),
   lastSeenAt: z.string().nullable().optional(),
   isOnline: z.boolean(),
 })
 
 const usersPageSchema = z.object({
-  data: z.array(userListItemSchema),
-  meta: z.object({
+  items: z.array(userListItemSchema),
+  pagination: z.object({
     page: z.number().int().positive(),
     limit: z.number().int().positive(),
     total: z.number().int().nonnegative(),
-    totalPages: z.number().int().nonnegative(),
+    pages: z.number().int().nonnegative(),
   }),
 })
 
@@ -30,8 +30,13 @@ export function parseUsersPage(payload: unknown): UsersPage {
   const parsed = usersPageSchema.parse(payload)
 
   return {
-    meta: parsed.meta,
-    data: parsed.data.map((user): UserListItem => {
+    meta: {
+      page: parsed.pagination.page,
+      limit: parsed.pagination.limit,
+      total: parsed.pagination.total,
+      totalPages: parsed.pagination.pages,
+    },
+    data: parsed.items.map((user): UserListItem => {
       const derivedName = [user.firstName, user.lastName].filter(Boolean).join(' ').trim()
 
       return {

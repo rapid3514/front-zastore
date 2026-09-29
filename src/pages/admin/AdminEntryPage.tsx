@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import { BarChart3, CalendarDays, Clock3, FolderOpen, LayoutDashboard, LogOut, Moon, Package, Shirt, ShoppingBag, Sun, UserRound, UsersRound } from 'lucide-react'
@@ -7,22 +8,33 @@ import { useTheme } from '@/features/theme/hooks/use-theme'
 import { AuthLoadingPage } from '@/pages/auth/AuthLoadingPage'
 import { TelegramRequiredPage } from '@/pages/auth/TelegramRequiredPage'
 import { cn } from '@/shared/lib/cn'
+import {
+  loadAdminCategoriesPage,
+  loadAdminCustomersPage,
+  loadAdminDashboardPage,
+  loadAdminOrdersPage,
+  loadAdminProductsPage,
+  loadAdminReportsPage,
+  loadAdminTodayPage,
+  loadAdminWorkHoursPage,
+  preloadAdminPages,
+} from '@/app/admin-page-loaders'
 
-const navigation: Array<{ to: string; label: string; icon: LucideIcon; end?: boolean }> = [
-  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/admin/customers', label: 'Customerlar', icon: UsersRound },
-  { to: '/admin/today', label: 'Bugun', icon: CalendarDays },
-  { to: '/admin/reports', label: 'Hisobot', icon: BarChart3 },
-  { to: '/admin/products', label: 'Mahsulotlar', icon: Package },
-  { to: '/admin/categories', label: 'Kategoriyalar', icon: FolderOpen },
-  { to: '/admin/orders', label: 'Buyurtmalar', icon: ShoppingBag },
-  { to: '/admin/work-hours', label: 'Ish vaqti', icon: Clock3 },
+const navigation: Array<{ to: string; label: string; icon: LucideIcon; end?: boolean; preload?: () => Promise<unknown> }> = [
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true, preload: loadAdminDashboardPage },
+  { to: '/admin/customers', label: 'Customerlar', icon: UsersRound, preload: loadAdminCustomersPage },
+  { to: '/admin/today', label: 'Bugun', icon: CalendarDays, preload: loadAdminTodayPage },
+  { to: '/admin/reports', label: 'Hisobot', icon: BarChart3, preload: loadAdminReportsPage },
+  { to: '/admin/products', label: 'Mahsulotlar', icon: Package, preload: loadAdminProductsPage },
+  { to: '/admin/categories', label: 'Kategoriyalar', icon: FolderOpen, preload: loadAdminCategoriesPage },
+  { to: '/admin/orders', label: 'Buyurtmalar', icon: ShoppingBag, preload: loadAdminOrdersPage },
+  { to: '/admin/work-hours', label: 'Ish vaqti', icon: Clock3, preload: loadAdminWorkHoursPage },
   { to: '/admin/profile', label: 'Profil', icon: UserRound },
 ]
 
 function Navigation({ mobile = false }: { mobile?: boolean }) {
-  return navigation.map(({ to, label, icon: Icon, end }) => (
-    <NavLink key={to} to={to} end={end} className={({ isActive }) => cn(mobile ? 'sa-mobile-nav-item' : 'sa-sidebar-link', isActive && (mobile ? 'sa-mobile-nav-item-active' : 'sa-sidebar-link-active'))}>
+  return navigation.map(({ to, label, icon: Icon, end, preload }) => (
+    <NavLink key={to} to={to} end={end} onPointerEnter={() => void preload?.()} onFocus={() => void preload?.()} onTouchStart={() => void preload?.()} className={({ isActive }) => cn(mobile ? 'sa-mobile-nav-item' : 'sa-sidebar-link', isActive && (mobile ? 'sa-mobile-nav-item-active' : 'sa-sidebar-link-active'))}>
       <Icon className="size-5" aria-hidden="true" />
       <span>{label}</span>
     </NavLink>
@@ -33,6 +45,11 @@ export function AdminEntryPage() {
   const { status, user, logout } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    void preloadAdminPages()
+  }, [])
+
   if (status === 'idle' || status === 'loading') return <div className="lumiera-auth-shell"><AuthLoadingPage /></div>
   if (status !== 'authenticated') return <div className="lumiera-auth-shell"><TelegramRequiredPage /></div>
   if (user?.role !== 'ADMIN') return <div className="lumiera-auth-shell"><AccessDeniedPage role={user?.role} /></div>

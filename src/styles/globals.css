@@ -1743,6 +1743,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .presence-stat-icon-violet { background: rgba(139, 92, 246, .14); color: #7c3aed; }
 
 .user-role-badge { white-space: nowrap; }
+.user-role-guest { background: rgba(100, 116, 139, .16); color: #475569; }
 .user-role-customer { background: rgba(16, 185, 129, .15); color: #047857; }
 .user-role-admin { background: rgba(59, 130, 246, .15); color: #1d4ed8; }
 .user-role-super-admin { background: rgba(139, 92, 246, .16); color: #6d28d9; }
@@ -1750,6 +1751,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .super-admin-executive .presence-stat-icon-blue { background: rgba(76, 142, 204, .2); color: #9bcbea; }
 .super-admin-executive .presence-stat-icon-green { background: rgba(35, 125, 94, .22); color: #78d7b4; }
 .super-admin-executive .presence-stat-icon-violet { background: rgba(118, 91, 176, .22); color: #c4b5fd; }
+.super-admin-executive .user-role-guest { background: rgba(100, 116, 139, .22); color: #cbd5e1; }
 .super-admin-executive .user-role-customer { background: rgba(35, 125, 94, .2); color: #8be0c0; }
 .super-admin-executive .user-role-admin { background: rgba(59, 116, 168, .23); color: #a9d7ff; }
 .super-admin-executive .user-role-super-admin { background: rgba(120, 91, 178, .24); color: #d5c5ff; }

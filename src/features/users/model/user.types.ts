@@ -1,4 +1,4 @@
-export type ManagedUserRole = 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN'
+export type ManagedUserRole = 'GUEST' | 'CUSTOMER' | 'ADMIN' | 'SUPER_ADMIN'
 
 export interface UserListItem {
   id: string
@@ -22,4 +22,4 @@ export interface UsersPage {
 }
 
 export type OnlineFilter = 'ALL' | 'ONLINE' | 'OFFLINE'
-export type RoleFilter = 'ALL' | ManagedUserRole
+export type RoleFilter = 'ALL' | Exclude<ManagedUserRole, 'GUEST'>

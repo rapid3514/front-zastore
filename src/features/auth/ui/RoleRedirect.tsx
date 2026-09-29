@@ -4,6 +4,7 @@ import { AuthErrorPage } from '@/pages/auth/AuthErrorPage'
 import { AuthLoadingPage } from '@/pages/auth/AuthLoadingPage'
 import { RegistrationRequiredPage } from '@/pages/auth/RegistrationRequiredPage'
 import { TelegramRequiredPage } from '@/pages/auth/TelegramRequiredPage'
+import { preloadAdminShell, preloadSuperAdminShell } from '@/app/admin-page-loaders'
 import { useAuthStore } from '../model/auth.store'
 
 export function RoleRedirect() {
@@ -16,6 +17,12 @@ export function RoleRedirect() {
   const renderAuthScreen = (screen: ReactNode) => (
     isSuperAdminPath ? screen : <div className="lumiera-auth-shell">{screen}</div>
   )
+
+  useEffect(() => {
+    if (status !== 'authenticated') return
+    if (role === 'ADMIN') void preloadAdminShell()
+    if (role === 'SUPER_ADMIN') void preloadSuperAdminShell()
+  }, [role, status])
 
   useEffect(() => {
     if (status !== 'authenticated' || !role) return

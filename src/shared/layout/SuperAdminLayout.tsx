@@ -1,20 +1,29 @@
+import { useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
 import { LayoutDashboard, LogOut, ShieldCheck, ShoppingBag, UserCog, UserRound, UsersRound } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { cn } from '@/shared/lib/cn'
+import {
+  loadAdminOrdersPage,
+  loadAdminsPage,
+  loadSuperAdminDashboardPage,
+  loadSuperAdminProfilePage,
+  loadSuperAdminUsersPage,
+  preloadSuperAdminPages,
+} from '@/app/admin-page-loaders'
 
-const navigation: Array<{ label: string; to: string; icon: LucideIcon; end?: boolean }> = [
-  { label: 'Dashboard', to: '/super-admin', icon: LayoutDashboard, end: true },
-  { label: 'Userlar', to: '/super-admin/users', icon: UsersRound },
-  { label: 'Adminlar', to: '/super-admin/admins', icon: UserCog },
-  { label: 'Buyurtmalar', to: '/super-admin/orders', icon: ShoppingBag },
-  { label: 'Profil', to: '/super-admin/profile', icon: UserRound },
+const navigation: Array<{ label: string; to: string; icon: LucideIcon; end?: boolean; preload: () => Promise<unknown> }> = [
+  { label: 'Dashboard', to: '/super-admin', icon: LayoutDashboard, end: true, preload: loadSuperAdminDashboardPage },
+  { label: 'Userlar', to: '/super-admin/users', icon: UsersRound, preload: loadSuperAdminUsersPage },
+  { label: 'Adminlar', to: '/super-admin/admins', icon: UserCog, preload: loadAdminsPage },
+  { label: 'Buyurtmalar', to: '/super-admin/orders', icon: ShoppingBag, preload: loadAdminOrdersPage },
+  { label: 'Profil', to: '/super-admin/profile', icon: UserRound, preload: loadSuperAdminProfilePage },
 ]
 
 function NavItems({ mobile = false }: { mobile?: boolean }) {
-  return navigation.map(({ label, to, icon: Icon, end }) => (
-    <NavLink key={to} to={to} end={end} className={({ isActive }) => cn(mobile ? 'sa-mobile-nav-item' : 'sa-sidebar-link', isActive && (mobile ? 'sa-mobile-nav-item-active' : 'sa-sidebar-link-active'))}>
+  return navigation.map(({ label, to, icon: Icon, end, preload }) => (
+    <NavLink key={to} to={to} end={end} onPointerEnter={() => void preload()} onFocus={() => void preload()} onTouchStart={() => void preload()} className={({ isActive }) => cn(mobile ? 'sa-mobile-nav-item' : 'sa-sidebar-link', isActive && (mobile ? 'sa-mobile-nav-item-active' : 'sa-sidebar-link-active'))}>
       <Icon className="size-5" aria-hidden="true" /><span>{label}</span>
     </NavLink>
   ))
@@ -23,6 +32,10 @@ function NavItems({ mobile = false }: { mobile?: boolean }) {
 export function SuperAdminLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    void preloadSuperAdminPages()
+  }, [])
 
   async function handleLogout() {
     await logout()
