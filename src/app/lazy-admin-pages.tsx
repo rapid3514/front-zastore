@@ -1,6 +1,8 @@
 import { lazy } from 'react'
 
 export const AdminEntryPage = lazy(() => import('@/pages/admin/AdminEntryPage').then((module) => ({ default: module.AdminEntryPage })))
+export const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage').then((module) => ({ default: module.AdminDashboardPage })))
+export const AdminCustomersPage = lazy(() => import('@/pages/admin/AdminCustomersPage').then((module) => ({ default: module.AdminCustomersPage })))
 export const AdminCategoriesPage = lazy(() => import('@/pages/admin/AdminCategoriesPage').then((module) => ({ default: module.AdminCategoriesPage })))
 export const AdminProductsPage = lazy(() => import('@/pages/admin/AdminProductsPage').then((module) => ({ default: module.AdminProductsPage })))
 export const AdminTodayPage = lazy(() => import('@/pages/admin/AdminTodayPage').then((module) => ({ default: module.AdminTodayPage })))
@@ -11,5 +13,6 @@ export const AdminWorkHoursPage = lazy(() => import('@/pages/admin/AdminWorkHour
 export const AdminDetailsPage = lazy(() => import('@/pages/super-admin/AdminDetailsPage').then((module) => ({ default: module.AdminDetailsPage })))
 export const AdminsPage = lazy(() => import('@/pages/super-admin/AdminsPage').then((module) => ({ default: module.AdminsPage })))
 export const SuperAdminDashboardPage = lazy(() => import('@/pages/super-admin/SuperAdminDashboardPage').then((module) => ({ default: module.SuperAdminDashboardPage })))
+export const SuperAdminUsersPage = lazy(() => import('@/pages/super-admin/SuperAdminUsersPage').then((module) => ({ default: module.SuperAdminUsersPage })))
 export const SuperAdminProfilePage = lazy(() => import('@/pages/super-admin/SuperAdminProfilePage').then((module) => ({ default: module.SuperAdminProfilePage })))
 export const SuperAdminLayout = lazy(() => import('@/shared/layout/SuperAdminLayout').then((module) => ({ default: module.SuperAdminLayout })))

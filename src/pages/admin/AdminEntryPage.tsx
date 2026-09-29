@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
-import { BarChart3, CalendarDays, Clock3, FolderOpen, LogOut, Moon, Package, Shirt, ShoppingBag, Sun, UserRound } from 'lucide-react'
+import { BarChart3, CalendarDays, Clock3, FolderOpen, LayoutDashboard, LogOut, Moon, Package, Shirt, ShoppingBag, Sun, UserRound, UsersRound } from 'lucide-react'
 import { AccessDeniedPage } from '@/features/auth/ui/AccessDeniedPage'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { useTheme } from '@/features/theme/hooks/use-theme'
@@ -9,7 +9,9 @@ import { TelegramRequiredPage } from '@/pages/auth/TelegramRequiredPage'
 import { cn } from '@/shared/lib/cn'
 
 const navigation: Array<{ to: string; label: string; icon: LucideIcon; end?: boolean }> = [
-  { to: '/admin', label: 'Bugun', icon: CalendarDays, end: true },
+  { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/admin/customers', label: 'Customerlar', icon: UsersRound },
+  { to: '/admin/today', label: 'Bugun', icon: CalendarDays },
   { to: '/admin/reports', label: 'Hisobot', icon: BarChart3 },
   { to: '/admin/products', label: 'Mahsulotlar', icon: Package },
   { to: '/admin/categories', label: 'Kategoriyalar', icon: FolderOpen },

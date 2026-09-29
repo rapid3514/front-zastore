@@ -16,7 +16,7 @@ import { HomePage } from '@/pages/shop/HomePage'
 import { CatalogPage } from '@/pages/shop/CatalogPage'
 import { ShopProductDetailsPage } from '@/pages/shop/ShopProductDetailsPage'
 import { ShopOrdersPage } from '@/pages/shop/ShopOrdersPage'
-import { AdminCategoriesPage, AdminDetailsPage, AdminEntryPage, AdminOrderDetailPage, AdminOrdersPage, AdminProductsPage, AdminReportsPage, AdminTodayPage, AdminWorkHoursPage, AdminsPage, SuperAdminDashboardPage, SuperAdminLayout, SuperAdminProfilePage } from './lazy-admin-pages'
+import { AdminCategoriesPage, AdminCustomersPage, AdminDashboardPage, AdminDetailsPage, AdminEntryPage, AdminOrderDetailPage, AdminOrdersPage, AdminProductsPage, AdminReportsPage, AdminTodayPage, AdminWorkHoursPage, AdminsPage, SuperAdminDashboardPage, SuperAdminLayout, SuperAdminProfilePage, SuperAdminUsersPage } from './lazy-admin-pages'
 
 export const router = createBrowserRouter([{
   element: <Suspense fallback={<AppLoader />}><RoleRedirect /></Suspense>,
@@ -37,7 +37,9 @@ export const router = createBrowserRouter([{
       { path: '*', element: <NotFoundPage /> },
     ] },
     { path: '/admin', element: <AdminEntryPage />, children: [
-      { index: true, element: <AdminTodayPage /> },
+      { index: true, element: <AdminDashboardPage /> },
+      { path: 'customers', element: <AdminCustomersPage /> },
+      { path: 'today', element: <AdminTodayPage /> },
       { path: 'reports', element: <AdminReportsPage /> },
       { path: 'products', element: <AdminProductsPage /> },
       { path: 'categories', element: <AdminCategoriesPage /> },
@@ -49,6 +51,7 @@ export const router = createBrowserRouter([{
     { element: <SuperAdminRoute />, children: [
       { path: '/super-admin', element: <SuperAdminLayout />, children: [
         { index: true, element: <SuperAdminDashboardPage /> },
+        { path: 'users', element: <SuperAdminUsersPage /> },
         { path: 'admins', element: <AdminsPage /> },
         { path: 'admins/:userId', element: <AdminDetailsPage /> },
         { path: 'orders', element: <AdminOrdersPage /> },

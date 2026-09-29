@@ -1,11 +1,12 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
-import { LayoutDashboard, LogOut, ShieldCheck, ShoppingBag, UserCog, UserRound } from 'lucide-react'
+import { LayoutDashboard, LogOut, ShieldCheck, ShoppingBag, UserCog, UserRound, UsersRound } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { cn } from '@/shared/lib/cn'
 
 const navigation: Array<{ label: string; to: string; icon: LucideIcon; end?: boolean }> = [
   { label: 'Dashboard', to: '/super-admin', icon: LayoutDashboard, end: true },
+  { label: 'Userlar', to: '/super-admin/users', icon: UsersRound },
   { label: 'Adminlar', to: '/super-admin/admins', icon: UserCog },
   { label: 'Buyurtmalar', to: '/super-admin/orders', icon: ShoppingBag },
   { label: 'Profil', to: '/super-admin/profile', icon: UserRound },

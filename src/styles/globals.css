@@ -1347,7 +1347,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   box-shadow: 0 18px 42px rgba(0,0,0,.32);
 }
 
-.super-admin-executive .sa-mobile-bottom-nav { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.super-admin-executive .sa-mobile-bottom-nav { grid-template-columns: repeat(5, minmax(0,1fr)); }
 .super-admin-executive .sa-mobile-nav-item { color: #78879a; }
 .super-admin-executive .sa-mobile-nav-item-active { background: rgba(58,113,166,.2); color: #a9d7ff; }
 .super-admin-executive .sa-sidebar-link { border-radius: .72rem; color: #8492a6; }
@@ -1715,4 +1715,51 @@ button, a { -webkit-tap-highlight-color: transparent; }
     background-size: max(100vw, 70rem) auto;
     background-position: center 46%;
   }
+}
+
+/* Presence dashboards and role-aware user directories */
+.presence-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+}
+
+.presence-stat-card {
+  min-width: 0;
+  border-radius: 1rem;
+  padding: 1rem;
+}
+
+.presence-stat-icon {
+  display: grid;
+  width: 2.65rem;
+  height: 2.65rem;
+  place-items: center;
+  border-radius: .85rem;
+}
+
+.presence-stat-icon-blue { background: rgba(59, 130, 246, .14); color: #2563eb; }
+.presence-stat-icon-green { background: rgba(16, 185, 129, .14); color: #059669; }
+.presence-stat-icon-violet { background: rgba(139, 92, 246, .14); color: #7c3aed; }
+
+.user-role-badge { white-space: nowrap; }
+.user-role-customer { background: rgba(16, 185, 129, .15); color: #047857; }
+.user-role-admin { background: rgba(59, 130, 246, .15); color: #1d4ed8; }
+.user-role-super-admin { background: rgba(139, 92, 246, .16); color: #6d28d9; }
+
+.super-admin-executive .presence-stat-icon-blue { background: rgba(76, 142, 204, .2); color: #9bcbea; }
+.super-admin-executive .presence-stat-icon-green { background: rgba(35, 125, 94, .22); color: #78d7b4; }
+.super-admin-executive .presence-stat-icon-violet { background: rgba(118, 91, 176, .22); color: #c4b5fd; }
+.super-admin-executive .user-role-customer { background: rgba(35, 125, 94, .2); color: #8be0c0; }
+.super-admin-executive .user-role-admin { background: rgba(59, 116, 168, .23); color: #a9d7ff; }
+.super-admin-executive .user-role-super-admin { background: rgba(120, 91, 178, .24); color: #d5c5ff; }
+
+@media (min-width: 40rem) {
+  .presence-stat-card { padding: 1.25rem; }
+  .presence-stats-grid { gap: 1rem; }
+  .presence-stats-grid-6 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (min-width: 90rem) {
+  .presence-stats-grid-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }

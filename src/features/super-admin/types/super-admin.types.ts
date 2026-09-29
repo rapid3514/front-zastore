@@ -20,3 +20,12 @@ export interface UpdateAdminInput {
 }
 
 export type AdminFilter = "all" | "active" | "blocked";
+
+export interface SuperAdminStats {
+  totalUsers: number;
+  onlineUsers: number;
+  totalCustomers: number;
+  onlineCustomers: number;
+  totalAdmins: number;
+  onlineAdmins: number;
+}

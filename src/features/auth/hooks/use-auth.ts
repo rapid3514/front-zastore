@@ -11,6 +11,7 @@ export function useAuth() {
     try {
       await authApi.logout()
     } finally {
+      queryClient.removeQueries({ queryKey: ['admin'] })
       queryClient.removeQueries({ queryKey: ['super-admin'] })
       queryClient.removeQueries({ queryKey: ['profile'] })
       useAuthStore.getState().logout()
