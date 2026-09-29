@@ -42,6 +42,7 @@ export function useOrderAdminMutations() {
   }
   return {
     confirm: useMutation({ mutationFn: (id: string) => ordersApi.confirm(id), onSuccess: refresh }),
+    reject: useMutation({ mutationFn: ({ id, reason }: { id: string; reason?: string }) => ordersApi.reject(id, reason), onSuccess: (_data, variables) => refresh(_data, variables.id) }),
     updateStatus: useMutation({ mutationFn: ({ id, status }: { id: string; status: OrderStatus }) => ordersApi.updateStatus(id, status), onSuccess: (_data, variables) => refresh(_data, variables.id) }),
   }
 }

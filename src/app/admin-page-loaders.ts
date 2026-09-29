@@ -47,6 +47,8 @@ export function preloadSuperAdminPages() {
     loadSuperAdminUsersPage,
     loadAdminsPage,
     loadAdminDetailsPage,
+    loadAdminProductsPage,
+    loadAdminCategoriesPage,
     loadAdminOrdersPage,
     loadAdminOrderDetailPage,
     loadSuperAdminProfilePage,

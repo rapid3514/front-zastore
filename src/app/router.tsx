@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { createBrowserRouter, Navigate } from 'react-router-dom'
+import { createBrowserRouter } from 'react-router-dom'
 import { AppLayout } from '@/app/layout/AppLayout'
 import { RoleRedirect } from '@/features/auth/ui/RoleRedirect'
 import { SuperAdminRoute } from '@/features/auth/ui/SuperAdminRoute'
@@ -16,6 +16,7 @@ import { HomePage } from '@/pages/shop/HomePage'
 import { CatalogPage } from '@/pages/shop/CatalogPage'
 import { ShopProductDetailsPage } from '@/pages/shop/ShopProductDetailsPage'
 import { ShopOrdersPage } from '@/pages/shop/ShopOrdersPage'
+import { ShopOrderDetailPage } from '@/pages/shop/ShopOrderDetailPage'
 import { AdminCategoriesPage, AdminCustomersPage, AdminDashboardPage, AdminDetailsPage, AdminEntryPage, AdminOrderDetailPage, AdminOrdersPage, AdminProductsPage, AdminReportsPage, AdminTodayPage, AdminWorkHoursPage, AdminsPage, SuperAdminDashboardPage, SuperAdminLayout, SuperAdminProfilePage, SuperAdminUsersPage } from './lazy-admin-pages'
 
 export const router = createBrowserRouter([{
@@ -29,8 +30,8 @@ export const router = createBrowserRouter([{
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'order-success/:id', element: <OrderSuccessPage /> },
       { path: 'orders', element: <ShopOrdersPage /> },
+      { path: 'orders/:id', element: <ShopOrderDetailPage /> },
       { path: 'profile', element: <ProfilePage /> },
-      { path: 'orders/:id', element: <Navigate to="/orders" replace /> },
       { path: 'auth/loading', element: <AuthLoadingPage /> },
       { path: 'auth/error', element: <AuthErrorPage /> },
       { path: 'registration-required', element: <RegistrationRequiredPage /> },
@@ -56,6 +57,8 @@ export const router = createBrowserRouter([{
         { path: 'admins/:userId', element: <AdminDetailsPage /> },
         { path: 'orders', element: <AdminOrdersPage /> },
         { path: 'orders/:id', element: <AdminOrderDetailPage /> },
+        { path: 'products', element: <AdminProductsPage /> },
+        { path: 'categories', element: <AdminCategoriesPage /> },
         { path: 'profile', element: <SuperAdminProfilePage /> },
       ] },
     ] },

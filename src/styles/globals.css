@@ -1347,7 +1347,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
   box-shadow: 0 18px 42px rgba(0,0,0,.32);
 }
 
-.super-admin-executive .sa-mobile-bottom-nav { grid-template-columns: repeat(5, minmax(0,1fr)); }
+.super-admin-executive .sa-mobile-bottom-nav {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.super-admin-executive .sa-mobile-bottom-nav::-webkit-scrollbar { display: none; }
+.super-admin-executive .sa-mobile-nav-item { min-width: 4.6rem; flex: 1 0 4.6rem; }
 .super-admin-executive .sa-mobile-nav-item { color: #78879a; }
 .super-admin-executive .sa-mobile-nav-item-active { background: rgba(58,113,166,.2); color: #a9d7ff; }
 .super-admin-executive .sa-sidebar-link { border-radius: .72rem; color: #8492a6; }

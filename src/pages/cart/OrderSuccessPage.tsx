@@ -12,6 +12,6 @@ export function OrderSuccessPage() {
       <div className="shop-order-number"><span>Buyurtma raqami</span><strong>#{id.slice(0, 8)}</strong></div>
       <p>Tez orada siz bilan bog‘lanamiz.</p>
     </div>
-    <Link to="/" className="shop-success-button">Asosiy sahifaga qaytish</Link>
+    <div className="flex flex-col gap-2"><Link to={`/orders/${id}`} className="shop-success-button">Buyurtmani ko‘rish</Link><Link to="/" className="text-center text-sm font-bold underline">Asosiy sahifaga qaytish</Link></div>
   </main>
 }

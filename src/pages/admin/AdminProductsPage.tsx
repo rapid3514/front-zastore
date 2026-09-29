@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Product, ProductInput } from '@/features/catalog/api/products.api'
@@ -11,7 +11,7 @@ import { ModalShell } from '@/features/super-admin/components/ModalShell'
 import { formatMoney } from '@/shared/lib/format'
 import { useToastStore } from '@/shared/ui/toast-store'
 
-function ProductForm({ product, onClose }: { product: Product | null; onClose: () => void }) {
+function ProductForm({ product, onClose, categoriesPath }: { product: Product | null; onClose: () => void; categoriesPath: string }) {
   const [name, setName] = useState(product?.name ?? '')
   const [description, setDescription] = useState(product?.description ?? '')
   const [price, setPrice] = useState(product?.price ?? '')
@@ -30,7 +30,7 @@ function ProductForm({ product, onClose }: { product: Product | null; onClose: (
     const amount = Number(price)
     if (name.trim().length < 2 || name.trim().length > 150) { setError('Nomi 2–150 belgidan iborat bo‘lishi kerak.'); return }
     if (!categoryId) { setError('Kategoriya tanlang.'); return }
-    if (!Number.isFinite(amount) || amount < 0 || amount > 99999999.99 || Math.round(amount * 100) !== amount * 100) { setError('Narxni to‘g‘ri kiriting.'); return }
+    if (!Number.isFinite(amount) || amount < 0.01 || amount > 99999999.99 || Math.round(amount * 100) !== amount * 100) { setError('Narx 0.01 dan 99 999 999.99 gacha bo‘lishi kerak.'); return }
     const input: ProductInput = { name: name.trim(), description: description.trim() || null, price: amount, imageUrl: imageUrl.trim() || null, categoryId, isAvailable, isActive }
     try {
       if (product) await update.mutateAsync({ id: product.id, input })
@@ -47,8 +47,8 @@ function ProductForm({ product, onClose }: { product: Product | null; onClose: (
         <label className="block text-sm font-bold text-slate-700">Kategoriya *<select required className="sa-input mt-2" value={categoryId} onChange={(event) => setCategoryId(event.target.value)}><option value="">Kategoriya tanlang</option>{categories.data?.filter((category) => category.isActive || category.id === product?.categoryId).map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
         {categories.isLoading ? <p className="text-sm text-slate-500">Kategoriyalar yuklanmoqda...</p> : null}
         {categories.isError ? <p className="text-sm text-red-600">Kategoriyalarni yuklab bo‘lmadi. <button type="button" className="underline" onClick={() => void categories.refetch()}>Qayta urinish</button></p> : null}
-        {categories.data?.length === 0 ? <p className="text-sm text-slate-600">Avval <Link to="/admin/categories" onClick={onClose} className="font-bold underline">kategoriya yarating</Link>.</p> : null}
-        <label className="block text-sm font-bold text-slate-700">Narx *<input required type="number" min={0} max={99999999.99} step="0.01" className="sa-input mt-2" value={price} onChange={(event) => setPrice(event.target.value)} /></label>
+        {categories.data?.length === 0 ? <p className="text-sm text-slate-600">Avval <Link to={categoriesPath} onClick={onClose} className="font-bold underline">kategoriya yarating</Link>.</p> : null}
+        <label className="block text-sm font-bold text-slate-700">Narx *<input required type="number" min={0.01} max={99999999.99} step="0.01" className="sa-input mt-2" value={price} onChange={(event) => setPrice(event.target.value)} /></label>
         <label className="block text-sm font-bold text-slate-700">Tavsif<textarea maxLength={2000} className="sa-input mt-2 min-h-24" value={description} onChange={(event) => setDescription(event.target.value)} /></label>
         <label className="block text-sm font-bold text-slate-700">Rasm URL<input type="url" className="sa-input mt-2" value={imageUrl} onChange={(event) => setImageUrl(event.target.value)} placeholder="https://..." /></label>
         <label className="flex items-center gap-3 text-sm font-bold text-slate-700"><input type="checkbox" checked={isAvailable} onChange={(event) => setIsAvailable(event.target.checked)} />Bugun mavjud</label>
@@ -61,6 +61,8 @@ function ProductForm({ product, onClose }: { product: Product | null; onClose: (
 }
 
 export function AdminProductsPage() {
+  const { pathname } = useLocation()
+  const categoriesPath = pathname.startsWith('/super-admin') ? '/super-admin/categories' : '/admin/categories'
   const [page, setPage] = useState(1)
   const [query, setQuery] = useState('')
   const [search, setSearch] = useState('')
@@ -79,7 +81,7 @@ export function AdminProductsPage() {
 
   async function deleteProduct() {
     if (!deleting) return
-    try { await remove.mutateAsync(deleting.id); showToast('Mahsulot o‘chirildi'); setDeleting(null) }
+    try { await remove.mutateAsync(deleting.id); showToast('Mahsulot o‘chirildi yoki arxivlandi'); setDeleting(null) }
     catch (cause) { showToast(catalogError(cause), 'error'); setDeleting(null) }
   }
 
@@ -96,7 +98,7 @@ export function AdminProductsPage() {
         </article>
       ))}</div>
       {products.data && products.data.meta.totalPages > 1 ? <div className="flex items-center justify-center gap-3"><Button type="button" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>Oldingi</Button><span className="text-sm font-bold">{page} / {products.data.meta.totalPages}</span><Button type="button" variant="outline" disabled={page >= products.data.meta.totalPages} onClick={() => setPage(page + 1)}>Keyingi</Button></div> : null}
-      {formProduct !== undefined ? <ProductForm product={formProduct} onClose={() => setFormProduct(undefined)} /> : null}
+      {formProduct !== undefined ? <ProductForm product={formProduct} categoriesPath={categoriesPath} onClose={() => setFormProduct(undefined)} /> : null}
       <ConfirmDialog open={deleting !== null} title="Mahsulotni o‘chirish" description={`“${deleting?.name ?? ''}” mahsulotini o‘chirmoqchimisiz?`} confirmLabel="O‘chirish" pending={remove.isPending} danger onConfirm={() => void deleteProduct()} onOpenChange={(open) => { if (!open) setDeleting(null) }} />
     </div>
   )

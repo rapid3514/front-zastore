@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
-import { LayoutDashboard, LogOut, ShieldCheck, ShoppingBag, UserCog, UserRound, UsersRound } from 'lucide-react'
+import { FolderOpen, LayoutDashboard, LogOut, Package, ShieldCheck, ShoppingBag, UserCog, UserRound, UsersRound } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { cn } from '@/shared/lib/cn'
 import {
   loadAdminOrdersPage,
+  loadAdminCategoriesPage,
+  loadAdminProductsPage,
   loadAdminsPage,
   loadSuperAdminDashboardPage,
   loadSuperAdminProfilePage,
@@ -17,6 +19,8 @@ const navigation: Array<{ label: string; to: string; icon: LucideIcon; end?: boo
   { label: 'Dashboard', to: '/super-admin', icon: LayoutDashboard, end: true, preload: loadSuperAdminDashboardPage },
   { label: 'Userlar', to: '/super-admin/users', icon: UsersRound, preload: loadSuperAdminUsersPage },
   { label: 'Adminlar', to: '/super-admin/admins', icon: UserCog, preload: loadAdminsPage },
+  { label: 'Mahsulotlar', to: '/super-admin/products', icon: Package, preload: loadAdminProductsPage },
+  { label: 'Kategoriyalar', to: '/super-admin/categories', icon: FolderOpen, preload: loadAdminCategoriesPage },
   { label: 'Buyurtmalar', to: '/super-admin/orders', icon: ShoppingBag, preload: loadAdminOrdersPage },
   { label: 'Profil', to: '/super-admin/profile', icon: UserRound, preload: loadSuperAdminProfilePage },
 ]

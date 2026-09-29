@@ -15,6 +15,8 @@ export function AdminOrdersPage() {
   const [search, setSearch] = useState(params.get('search') ?? '')
   const [debouncedSearch, setDebouncedSearch] = useState(search)
   const status = params.get('status') as OrderStatus | null
+  const createdFrom = params.get('createdFrom') ?? ''
+  const createdTo = params.get('createdTo') ?? ''
   const page = Number(params.get('page') ?? '1') || 1
 
   useEffect(() => {
@@ -31,7 +33,14 @@ export function AdminOrdersPage() {
     return () => window.clearTimeout(timer)
   }, [search, setParams])
 
-  const orders = useManageOrders({ page, limit: 20, ...(debouncedSearch ? { search: debouncedSearch } : {}), ...(status ? { status } : {}) })
+  const orders = useManageOrders({
+    page,
+    limit: 20,
+    ...(debouncedSearch ? { search: debouncedSearch } : {}),
+    ...(status ? { status } : {}),
+    ...(createdFrom ? { createdFrom: new Date(`${createdFrom}T00:00:00`).toISOString() } : {}),
+    ...(createdTo ? { createdTo: new Date(`${createdTo}T23:59:59.999`).toISOString() } : {}),
+  })
   const meta = orders.data?.meta
 
   function setStatus(value: string) {
@@ -52,14 +61,26 @@ export function AdminOrdersPage() {
     })
   }
 
+  function setDate(name: 'createdFrom' | 'createdTo', value: string) {
+    setParams((current) => {
+      const next = new URLSearchParams(current)
+      if (value) next.set(name, value)
+      else next.delete(name)
+      next.delete('page')
+      return next
+    })
+  }
+
   return (
     <main className="sa-page-container space-y-5">
       <header><p className="sa-eyebrow">Buyurtmalar</p><h1 className="sa-page-title">Mijozlar buyurtmalari</h1><p className="sa-page-description">Buyurtmalarni ko‘ring, tasdiqlang va tayyorlanish holatini yangilang.</p></header>
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(16rem,1fr)_14rem_11rem_11rem]">
         <label className="sa-search flex-1"><Search className="size-4 text-slate-400" /><span className="sr-only">Buyurtma qidirish</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buyurtma yoki mijoz qidirish..." /></label>
         <select className="sa-input sm:max-w-xs" value={status ?? ''} onChange={(event) => setStatus(event.target.value)}><option value="">Barcha holatlar</option>{orderStatuses.map((item) => <option key={item} value={item}>{orderStatusLabels[item]}</option>)}</select>
+        <label className="text-xs font-bold text-slate-500">Boshlanish sana<input type="date" className="sa-input mt-1" value={createdFrom} max={createdTo || undefined} onChange={(event) => setDate('createdFrom', event.target.value)} /></label>
+        <label className="text-xs font-bold text-slate-500">Tugash sana<input type="date" className="sa-input mt-1" value={createdTo} min={createdFrom || undefined} onChange={(event) => setDate('createdTo', event.target.value)} /></label>
       </div>
-      {orders.isLoading ? <div className="sa-glass rounded-2xl p-6 text-center">Buyurtmalar yuklanmoqda...</div> : null}
+      {orders.isLoading ? <div className="grid gap-3" aria-label="Buyurtmalar yuklanmoqda">{[1, 2, 3].map((item) => <div key={item} className="sa-glass animate-pulse space-y-3 rounded-2xl p-5"><div className="h-5 w-1/3 rounded bg-slate-200" /><div className="h-4 w-full rounded bg-slate-100" /><div className="h-4 w-2/3 rounded bg-slate-100" /></div>)}</div> : null}
       {orders.isError ? <div className="sa-glass rounded-2xl p-6 text-center text-red-600">Buyurtmalarni yuklab bo‘lmadi. <button type="button" className="font-bold underline" onClick={() => void orders.refetch()}>Qayta urinish</button></div> : null}
       {orders.data?.data.length === 0 ? <div className="sa-glass rounded-2xl p-8 text-center text-slate-600">Buyurtmalar topilmadi.</div> : null}
       <div className="grid gap-3">

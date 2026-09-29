@@ -16,6 +16,9 @@ export interface CreateOrderInput {
 export interface OrdersParams {
   status?: OrderStatus
   search?: string
+  customerId?: string
+  createdFrom?: string
+  createdTo?: string
   page?: number
   limit?: number
 }
@@ -51,6 +54,7 @@ const orderSchema = z.object({
   cancelledAt: z.string().nullable(),
   completedAt: z.string().nullable(),
   expiredAt: z.string().nullable(),
+  cancelReason: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
   items: z.array(orderItemSchema),
@@ -106,7 +110,7 @@ export const ordersApi = {
     return ordersPageSchema.parse(data)
   },
   async getById(id: string) {
-    const { data } = await api.get<unknown>(`/orders/${id}`)
+    const { data } = await api.get<unknown>(`/orders/my/${id}`)
     return orderSchema.parse(data)
   },
   async cancel(id: string, reason?: string) {
@@ -127,6 +131,10 @@ export const ordersApi = {
   },
   async confirm(id: string) {
     const { data } = await api.patch<unknown>(`/orders/${id}/confirm`)
+    return orderSchema.parse(data)
+  },
+  async reject(id: string, reason?: string) {
+    const { data } = await api.patch<unknown>(`/orders/${id}/reject`, reason ? { reason } : {})
     return orderSchema.parse(data)
   },
   async updateStatus(id: string, status: OrderStatus) {

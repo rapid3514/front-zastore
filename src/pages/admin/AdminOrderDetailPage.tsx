@@ -15,11 +15,13 @@ export function AdminOrderDetailPage() {
   const { pathname } = useLocation()
   const basePath = pathname.startsWith('/super-admin') ? '/super-admin' : '/admin'
   const order = useManageOrder(id)
-  const { confirm, updateStatus } = useOrderAdminMutations()
+  const { confirm, reject, updateStatus } = useOrderAdminMutations()
   const showToast = useToastStore((state) => state.show)
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null)
+  const [showReject, setShowReject] = useState(false)
+  const [rejectReason, setRejectReason] = useState('')
 
-  if (order.isLoading) return <main className="sa-page-container">Buyurtma yuklanmoqda...</main>
+  if (order.isLoading) return <main className="sa-page-container space-y-4" aria-label="Buyurtma yuklanmoqda">{[1, 2, 3].map((item) => <div key={item} className="sa-glass animate-pulse space-y-3 rounded-3xl p-5"><div className="h-6 w-2/5 rounded bg-slate-200" /><div className="h-4 w-full rounded bg-slate-100" /><div className="h-4 w-3/4 rounded bg-slate-100" /></div>)}</main>
   if (order.isError || !order.data) return <main className="sa-page-container"><p>Buyurtma topilmadi.</p><Link to={`${basePath}/orders`} className="back-link"><ChevronLeft className="size-5" />Buyurtmalarga qaytish</Link></main>
 
   const item = order.data
@@ -43,6 +45,22 @@ export function AdminOrderDetailPage() {
     void runAction(() => updateStatus.mutateAsync({ id, status }), `${orderStatusLabels[status]} holatiga o‘tkazildi`)
   }
 
+  async function rejectOrder() {
+    const reason = rejectReason.trim()
+    setPendingStatus('CANCELLED')
+    try {
+      await reject.mutateAsync({ id, ...(reason ? { reason } : {}) })
+      showToast('Buyurtma rad etildi')
+      await order.refetch()
+      setShowReject(false)
+      setRejectReason('')
+    } catch (error) {
+      showToast(normalizeApiError(error).message, 'error')
+    } finally {
+      setPendingStatus(null)
+    }
+  }
+
   return (
     <main className="sa-page-container space-y-5">
       <Link to={`${basePath}/orders`} className="back-link"><ChevronLeft className="size-5" />Buyurtmalarga qaytish</Link>
@@ -53,6 +71,7 @@ export function AdminOrderDetailPage() {
         <p className="text-sm"><strong>Telefon:</strong> {item.phone ?? '—'}</p>
         <p className="text-sm"><strong>Manzil:</strong> {item.deliveryAddress ?? '—'}</p>
         <p className="text-sm"><strong>Izoh:</strong> {item.note ?? '—'}</p>
+        {item.cancelReason ? <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700"><strong>Bekor qilish sababi:</strong> {item.cancelReason}</p> : null}
         {item.latitude ? <p className="text-sm"><strong>Koordinata:</strong> {item.latitude}, {item.longitude}</p> : null}
       </GlassCard>
       <GlassCard className="sa-glass space-y-3 rounded-3xl p-5">
@@ -65,8 +84,10 @@ export function AdminOrderDetailPage() {
         <p className="mt-2 text-sm"><strong>Tasdiqlash muddati:</strong> {formatDateTime(item.confirmationDeadline)}</p>
         <div className="mt-5 flex flex-wrap gap-2">
           {item.status === 'PENDING_CONFIRMATION' ? <Button type="button" disabled={confirm.isPending} onClick={() => void runAction(() => confirm.mutateAsync(id), 'Buyurtma tasdiqlandi')}>{confirm.isPending ? <Loader2 className="size-4 animate-spin" /> : null}Tasdiqlash</Button> : null}
+          {item.status === 'PENDING_CONFIRMATION' ? <Button type="button" variant="outline" disabled={reject.isPending} onClick={() => setShowReject((current) => !current)}>Rad etish</Button> : null}
           {nextStatuses.map((status) => <Button key={status} type="button" variant="outline" disabled={updateStatus.isPending} onClick={() => changeStatus(status)}>{pendingStatus === status && updateStatus.isPending ? <Loader2 className="size-4 animate-spin" /> : null}{orderStatusLabels[status]}</Button>)}
         </div>
+        {showReject ? <div className="mt-4 space-y-3 rounded-2xl border border-red-200 bg-red-50/70 p-4"><label className="block text-sm font-bold text-red-800">Rad etish sababi (ixtiyoriy)<textarea className="sa-input mt-2 min-h-24" maxLength={500} value={rejectReason} onChange={(event) => setRejectReason(event.target.value)} placeholder="Mijozga ko‘rinadigan sabab" /></label><div className="flex flex-wrap justify-end gap-2"><Button type="button" variant="outline" disabled={reject.isPending} onClick={() => setShowReject(false)}>Yopish</Button><Button type="button" disabled={reject.isPending} onClick={() => void rejectOrder()}>{reject.isPending ? <Loader2 className="size-4 animate-spin" /> : null}Rad etishni tasdiqlash</Button></div></div> : null}
       </GlassCard>
     </main>
   )

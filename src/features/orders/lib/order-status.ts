@@ -17,7 +17,7 @@ export function getOrderStatusClass(status: OrderStatus) {
 }
 
 export function getNextAdminStatuses(status: OrderStatus): OrderStatus[] {
-  if (status === 'PENDING_CONFIRMATION') return ['CANCELLED']
+  if (status === 'PENDING_CONFIRMATION') return []
   if (status === 'CONFIRMED') return ['PROCESSING', 'CANCELLED']
   if (status === 'PROCESSING') return ['COMPLETED', 'CANCELLED']
   return []
