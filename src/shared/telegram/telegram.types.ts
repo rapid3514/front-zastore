@@ -2,6 +2,10 @@ export type TelegramThemeParams = Record<string, string | undefined>
 
 export interface TelegramWebApp {
   initData: string
+  initDataUnsafe?: {
+    start_param?: string
+    [key: string]: unknown
+  }
   colorScheme: 'light' | 'dark'
   themeParams: TelegramThemeParams
   ready(): void

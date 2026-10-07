@@ -62,7 +62,7 @@ export function CatalogPage() {
       {categories.isError ? <div className="glass-card p-4 text-sm">Kategoriyalar yuklanmadi. <button type="button" className="font-bold underline" onClick={() => void categories.refetch()}>Qayta urinish</button></div> : null}
       <div className="shop-chips hide-scrollbar" aria-label="Kategoriyalar">
         <button type="button" className={`shop-chip ${!categoryId ? 'shop-chip-active' : ''}`} onClick={() => updateParam('category', '')}>Barchasi</button>
-        {categories.data?.map((category) => <button key={category.id} type="button" className={`shop-chip ${categoryId === category.id ? 'shop-chip-active' : ''}`} onClick={() => updateParam('category', category.id)}>{category.name}</button>)}
+        {categories.data?.filter((category) => category.isActive).map((category) => <button key={category.id} type="button" className={`shop-chip ${categoryId === category.id ? 'shop-chip-active' : ''}`} onClick={() => updateParam('category', category.id)}>{category.name}</button>)}
       </div>
 
       <div className="flex items-center justify-between gap-3">

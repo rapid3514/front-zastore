@@ -16,9 +16,13 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173,
     strictPort: true,
+
     allowedHosts: ['.trycloudflare.com'],
-    ws: false,
-    hmr: false,
+
+    hmr: {
+      protocol: 'wss',
+      clientPort: 443,
+    },
   },
 
   preview: {

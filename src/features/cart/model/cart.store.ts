@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Product } from '@/features/catalog/api/products.api'
+import { getProductCoverUrl } from '@/features/catalog/lib/product-media'
 
 export interface CartItem {
   productId: string
@@ -27,16 +28,17 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       items: [],
       addItem: (product) => set((state) => {
+        if (!product.isActive || !product.isAvailable) return state
         const existing = state.items.find((item) => item.productId === product.id)
         if (existing) {
           return { items: state.items.map((item) => item.productId === product.id ? { ...item, quantity: item.quantity + 1, isAvailable: product.isAvailable, price: product.price } : item) }
         }
-        return { items: [...state.items, { productId: product.id, name: product.name, category: product.category.name, imageUrl: product.imageUrl, price: product.price, quantity: 1, isAvailable: product.isAvailable }] }
+        return { items: [...state.items, { productId: product.id, name: product.name, category: product.category.name, imageUrl: getProductCoverUrl(product), price: product.price, quantity: 1, isAvailable: product.isAvailable }] }
       }),
       removeItem: (productId) => set((state) => ({ items: state.items.filter((item) => item.productId !== productId) })),
       increaseQuantity: (productId) => set((state) => ({ items: state.items.map((item) => item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item) })),
-      decreaseQuantity: (productId) => set((state) => ({ items: state.items.flatMap((item) => item.productId === productId ? (item.quantity > 1 ? [{ ...item, quantity: item.quantity - 1 }] : []) : [item]) })),
-      setQuantity: (productId, quantity) => set((state) => ({ items: state.items.flatMap((item) => item.productId === productId ? (quantity > 0 ? [{ ...item, quantity: Math.floor(quantity) }] : []) : [item]) })),
+      decreaseQuantity: (productId) => set((state) => ({ items: state.items.map((item) => item.productId === productId ? { ...item, quantity: Math.max(1, item.quantity - 1) } : item) })),
+      setQuantity: (productId, quantity) => set((state) => ({ items: state.items.map((item) => item.productId === productId ? { ...item, quantity: Math.max(1, Math.floor(quantity) || 1) } : item) })),
       clearCart: () => set({ items: [] }),
     }),
     { name: 'zastore-shop-cart-v2', partialize: (state) => ({ items: state.items }) },

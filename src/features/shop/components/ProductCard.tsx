@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import type { Product } from '@/features/catalog/api/products.api'
 import { useCartStore } from '@/features/cart/model/cart.store'
 import { formatMoney } from '@/shared/lib/format'
+import { getProductCoverUrl } from '@/features/catalog/lib/product-media'
 import { ShopImage } from './ShopImage'
 
 export function ProductCard({ product }: { product: Product }) {
@@ -13,7 +14,7 @@ export function ProductCard({ product }: { product: Product }) {
     <article className={`shop-product-card glass-card ${canOrder ? '' : 'opacity-60'}`}>
       <Link to={`/product/${product.id}`} className="block overflow-hidden rounded-t-[inherit]" aria-label={`${product.name} tafsilotlari`}>
         <div className="relative">
-          <ShopImage name={product.name} imageUrl={product.imageUrl} className="aspect-[4/4.5] w-full" />
+          <ShopImage name={product.name} imageUrl={getProductCoverUrl(product)} className="aspect-[4/4.5] w-full" />
           <span className="shop-favorite-mark" aria-hidden="true"><Heart size={16} fill="currentColor" /></span>
           {!canOrder ? <span className="shop-discount">Mavjud emas</span> : null}
         </div>

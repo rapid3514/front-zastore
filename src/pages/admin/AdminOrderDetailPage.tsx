@@ -70,13 +70,14 @@ export function AdminOrderDetailPage() {
         <p className="text-sm"><strong>Ism:</strong> {`${item.customer.firstName} ${item.customer.lastName ?? ''}`.trim()}</p>
         <p className="text-sm"><strong>Telefon:</strong> {item.phone ?? '—'}</p>
         <p className="text-sm"><strong>Manzil:</strong> {item.deliveryAddress ?? '—'}</p>
+        {item.btcPostBranchNumber ? <p className="text-sm"><strong>BTC pochta filiali:</strong> {item.btcPostBranchNumber}</p> : null}
         <p className="text-sm"><strong>Izoh:</strong> {item.note ?? '—'}</p>
         {item.cancelReason ? <p className="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700"><strong>Bekor qilish sababi:</strong> {item.cancelReason}</p> : null}
         {item.latitude ? <p className="text-sm"><strong>Koordinata:</strong> {item.latitude}, {item.longitude}</p> : null}
       </GlassCard>
       <GlassCard className="sa-glass space-y-3 rounded-3xl p-5">
         <h2 className="text-lg font-black text-slate-950">Mahsulotlar</h2>
-        {item.items.map((line) => <div key={line.id} className="flex justify-between gap-3 border-t border-slate-200/70 pt-3 text-sm"><span>{line.productName} × {line.quantity}</span><strong>{formatMoney(line.lineTotal)}</strong></div>)}
+        {item.items.map((line) => <div key={line.id} className="flex justify-between gap-3 border-t border-slate-200/70 pt-3 text-sm"><span>{line.productName} × {line.quantity}<small className="mt-1 block text-slate-500">Bir dona: {formatMoney(line.unitPrice)}</small></span><strong>{formatMoney(line.lineTotal)}</strong></div>)}
         <div className="border-t border-slate-200/70 pt-3 text-right font-black">Jami: {formatMoney(item.total)}</div>
       </GlassCard>
       <GlassCard className="sa-glass rounded-3xl p-5">

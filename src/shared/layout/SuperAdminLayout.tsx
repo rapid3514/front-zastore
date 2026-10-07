@@ -1,17 +1,16 @@
-import { useEffect } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
-import { FolderOpen, LayoutDashboard, LogOut, Package, ShieldCheck, ShoppingBag, UserCog, UserRound, UsersRound } from 'lucide-react'
+import { Activity, LayoutDashboard, LogOut, ScrollText, ShieldCheck, UserCog, UserRound, UsersRound } from 'lucide-react'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { cn } from '@/shared/lib/cn'
 import {
-  loadAdminOrdersPage,
-  loadAdminCategoriesPage,
-  loadAdminProductsPage,
   loadAdminsPage,
   loadSuperAdminDashboardPage,
   loadSuperAdminProfilePage,
   loadSuperAdminUsersPage,
+  loadAuditLogsPage,
+  loadSystemStatusPage,
   preloadSuperAdminPages,
 } from '@/app/admin-page-loaders'
 
@@ -19,9 +18,8 @@ const navigation: Array<{ label: string; to: string; icon: LucideIcon; end?: boo
   { label: 'Dashboard', to: '/super-admin', icon: LayoutDashboard, end: true, preload: loadSuperAdminDashboardPage },
   { label: 'Userlar', to: '/super-admin/users', icon: UsersRound, preload: loadSuperAdminUsersPage },
   { label: 'Adminlar', to: '/super-admin/admins', icon: UserCog, preload: loadAdminsPage },
-  { label: 'Mahsulotlar', to: '/super-admin/products', icon: Package, preload: loadAdminProductsPage },
-  { label: 'Kategoriyalar', to: '/super-admin/categories', icon: FolderOpen, preload: loadAdminCategoriesPage },
-  { label: 'Buyurtmalar', to: '/super-admin/orders', icon: ShoppingBag, preload: loadAdminOrdersPage },
+  { label: 'Audit', to: '/super-admin/audit-logs', icon: ScrollText, preload: loadAuditLogsPage },
+  { label: 'System', to: '/super-admin/system-status', icon: Activity, preload: loadSystemStatusPage },
   { label: 'Profil', to: '/super-admin/profile', icon: UserRound, preload: loadSuperAdminProfilePage },
 ]
 
@@ -36,10 +34,19 @@ function NavItems({ mobile = false }: { mobile?: boolean }) {
 export function SuperAdminLayout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const mobileNavRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     void preloadSuperAdminPages()
   }, [])
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      mobileNavRef.current?.querySelector<HTMLElement>('[aria-current="page"]')?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [location.pathname])
 
   async function handleLogout() {
     await logout()
@@ -66,7 +73,7 @@ export function SuperAdminLayout() {
         <main className="sa-main"><Outlet /></main>
       </div>
 
-      <nav className="sa-mobile-bottom-nav" aria-label="Super admin mobil navigatsiyasi"><NavItems mobile /></nav>
+      <nav ref={mobileNavRef} className="sa-mobile-bottom-nav" aria-label="Super admin mobil navigatsiyasi"><NavItems mobile /></nav>
     </div>
   )
 }

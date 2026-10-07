@@ -6,6 +6,7 @@ import { getCartSubtotal, useCartStore } from '@/features/cart/model/cart.store'
 import { useCreateOrder } from '@/features/orders/hooks/use-orders'
 import { normalizeApiError } from '@/shared/api/api-error'
 import { formatMoney } from '@/shared/lib/format'
+import { OrderSuccessNotice } from './OrderSuccessNotice'
 
 export function CheckoutPage() {
   const navigate = useNavigate()
@@ -15,27 +16,40 @@ export function CheckoutPage() {
   const createOrder = useCreateOrder()
   const [phone, setPhone] = useState(user?.phone ?? '')
   const [deliveryAddress, setDeliveryAddress] = useState('')
+  const [btcPostBranchNumber, setBtcPostBranchNumber] = useState('')
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
+  const [successOrderId, setSuccessOrderId] = useState<string | null>(null)
   const subtotal = getCartSubtotal(items)
 
   if (!items.length) return <Navigate to="/cart" replace />
 
   async function submit(event: FormEvent) {
     event.preventDefault()
+    if (createOrder.isPending || successOrderId) return
     setError('')
+    if (items.some((item) => !item.isAvailable)) {
+      setError('Mavjud bo‘lmagan mahsulotlarni savatdan olib tashlang.')
+      return
+    }
     try {
       const order = await createOrder.mutateAsync({
         items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
         ...(phone.trim() ? { phone: phone.trim() } : {}),
         ...(deliveryAddress.trim() ? { deliveryAddress: deliveryAddress.trim() } : {}),
+        ...(btcPostBranchNumber.trim() ? { btcPostBranchNumber: btcPostBranchNumber.trim() } : {}),
         ...(note.trim() ? { note: note.trim() } : {}),
       })
-      clearCart()
-      navigate(`/order-success/${order.id}`, { replace: true })
+      setSuccessOrderId(order.id)
     } catch (cause) {
       setError(normalizeApiError(cause).message)
     }
+  }
+
+  function dismissSuccessNotice() {
+    if (!successOrderId) return
+    clearCart()
+    navigate(`/order-success/${successOrderId}`, { replace: true })
   }
 
   return <main className="page-container shop-page shop-checkout-page">
@@ -45,6 +59,7 @@ export function CheckoutPage() {
       <div className="glass-card space-y-5 p-4 sm:p-6">
         <label className="shop-field"><span><Phone size={17} /> Telefon raqam</span><input type="tel" maxLength={30} value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+998 90 123 45 67" /></label>
         <label className="shop-field"><span><MapPin size={17} /> Yetkazib berish manzili</span><input maxLength={255} value={deliveryAddress} onChange={(event) => setDeliveryAddress(event.target.value)} placeholder="Manzilni kiriting" /></label>
+        <label className="shop-field"><span><MapPin size={17} /> BTC pochta filial raqami</span><input maxLength={50} value={btcPostBranchNumber} onChange={(event) => setBtcPostBranchNumber(event.target.value)} placeholder="Filial raqamini kiriting" /></label>
         <label className="shop-field"><span>Izoh (ixtiyoriy)</span><textarea maxLength={500} value={note} onChange={(event) => setNote(event.target.value)} placeholder="Masalan: qo‘ng‘iroq qiling..." /></label>
       </div>
       <aside className="shop-checkout-summary glass-card">
@@ -55,5 +70,6 @@ export function CheckoutPage() {
         <button type="submit" disabled={createOrder.isPending} className="shop-primary-button w-full">{createOrder.isPending ? <Loader2 className="size-4 animate-spin" /> : <ShoppingBag className="size-4" />}{createOrder.isPending ? 'Yuborilmoqda...' : <>Tasdiqlash <ArrowRight size={17} /></>}</button>
       </aside>
     </form>
+    {successOrderId ? <OrderSuccessNotice orderId={successOrderId} onDismiss={dismissSuccessNotice} /> : null}
   </main>
 }

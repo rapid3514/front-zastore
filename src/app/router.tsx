@@ -9,6 +9,7 @@ import { RegistrationRequiredPage } from '@/pages/auth/RegistrationRequiredPage'
 import { CartPage } from '@/pages/cart/CartPage'
 import { CheckoutPage } from '@/pages/cart/CheckoutPage'
 import { OrderSuccessPage } from '@/pages/cart/OrderSuccessPage'
+import { OrderPage } from '@/pages/order/OrderPage'
 import { NotFoundPage } from '@/pages/not-found/NotFoundPage'
 import { ProfilePage } from '@/pages/profile/ProfilePage'
 import { AppLoader } from '@/shared/ui/app-loader'
@@ -17,7 +18,7 @@ import { CatalogPage } from '@/pages/shop/CatalogPage'
 import { ShopProductDetailsPage } from '@/pages/shop/ShopProductDetailsPage'
 import { ShopOrdersPage } from '@/pages/shop/ShopOrdersPage'
 import { ShopOrderDetailPage } from '@/pages/shop/ShopOrderDetailPage'
-import { AdminCategoriesPage, AdminCustomersPage, AdminDashboardPage, AdminDetailsPage, AdminEntryPage, AdminOrderDetailPage, AdminOrdersPage, AdminProductsPage, AdminReportsPage, AdminTodayPage, AdminWorkHoursPage, AdminsPage, SuperAdminDashboardPage, SuperAdminLayout, SuperAdminProfilePage, SuperAdminUsersPage } from './lazy-admin-pages'
+import { AdminCategoriesPage, AdminCustomersPage, AdminDashboardPage, AdminDetailsPage, AdminEntryPage, AdminOrderDetailPage, AdminOrdersPage, AdminPaymentsPage, AdminProductsPage, AdminReportsPage, AdminTodayPage, AdminWorkHoursPage, AdminsPage, AuditLogsPage, SuperAdminDashboardPage, SuperAdminLayout, SuperAdminProfilePage, SuperAdminUsersPage, SystemStatusPage } from './lazy-admin-pages'
 
 export const router = createBrowserRouter([{
   element: <Suspense fallback={<AppLoader />}><RoleRedirect /></Suspense>,
@@ -29,6 +30,7 @@ export const router = createBrowserRouter([{
       { path: 'cart', element: <CartPage /> },
       { path: 'checkout', element: <CheckoutPage /> },
       { path: 'order-success/:id', element: <OrderSuccessPage /> },
+      { path: 'order/:productId', element: <OrderPage /> },
       { path: 'orders', element: <ShopOrdersPage /> },
       { path: 'orders/:id', element: <ShopOrderDetailPage /> },
       { path: 'profile', element: <ProfilePage /> },
@@ -47,6 +49,7 @@ export const router = createBrowserRouter([{
       { path: 'orders', element: <AdminOrdersPage /> },
       { path: 'orders/:id', element: <AdminOrderDetailPage /> },
       { path: 'work-hours', element: <AdminWorkHoursPage /> },
+      { path: 'payments', element: <AdminPaymentsPage /> },
       { path: 'profile', element: <ProfilePage /> },
     ] },
     { element: <SuperAdminRoute />, children: [
@@ -55,10 +58,8 @@ export const router = createBrowserRouter([{
         { path: 'users', element: <SuperAdminUsersPage /> },
         { path: 'admins', element: <AdminsPage /> },
         { path: 'admins/:userId', element: <AdminDetailsPage /> },
-        { path: 'orders', element: <AdminOrdersPage /> },
-        { path: 'orders/:id', element: <AdminOrderDetailPage /> },
-        { path: 'products', element: <AdminProductsPage /> },
-        { path: 'categories', element: <AdminCategoriesPage /> },
+        { path: 'audit-logs', element: <AuditLogsPage /> },
+        { path: 'system-status', element: <SystemStatusPage /> },
         { path: 'profile', element: <SuperAdminProfilePage /> },
       ] },
     ] },

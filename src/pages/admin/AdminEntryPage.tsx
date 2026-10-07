@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import type { LucideIcon } from 'lucide-react'
-import { BarChart3, CalendarDays, Clock3, FolderOpen, LayoutDashboard, LogOut, Moon, Package, Shirt, ShoppingBag, Sun, UserRound, UsersRound } from 'lucide-react'
+import { BarChart3, CalendarDays, Clock3, CreditCard, FolderOpen, LayoutDashboard, LogOut, Moon, Package, Shirt, ShoppingBag, Sun, UserRound, UsersRound } from 'lucide-react'
 import { AccessDeniedPage } from '@/features/auth/ui/AccessDeniedPage'
 import { useAuth } from '@/features/auth/hooks/use-auth'
 import { useTheme } from '@/features/theme/hooks/use-theme'
@@ -17,6 +17,7 @@ import {
   loadAdminReportsPage,
   loadAdminTodayPage,
   loadAdminWorkHoursPage,
+  loadAdminPaymentsPage,
   preloadAdminPages,
 } from '@/app/admin-page-loaders'
 
@@ -29,6 +30,7 @@ const navigation: Array<{ to: string; label: string; icon: LucideIcon; end?: boo
   { to: '/admin/categories', label: 'Kategoriyalar', icon: FolderOpen, preload: loadAdminCategoriesPage },
   { to: '/admin/orders', label: 'Buyurtmalar', icon: ShoppingBag, preload: loadAdminOrdersPage },
   { to: '/admin/work-hours', label: 'Ish vaqti', icon: Clock3, preload: loadAdminWorkHoursPage },
+  { to: '/admin/payments', label: 'To‘lovlar', icon: CreditCard, preload: loadAdminPaymentsPage },
   { to: '/admin/profile', label: 'Profil', icon: UserRound },
 ]
 
@@ -45,10 +47,19 @@ export function AdminEntryPage() {
   const { status, user, logout } = useAuth()
   const { isDark, toggleTheme } = useTheme()
   const navigate = useNavigate()
+  const location = useLocation()
+  const mobileNavRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     void preloadAdminPages()
   }, [])
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      mobileNavRef.current?.querySelector<HTMLElement>('[aria-current="page"]')?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [location.pathname])
 
   if (status === 'idle' || status === 'loading') return <div className="lumiera-auth-shell"><AuthLoadingPage /></div>
   if (status !== 'authenticated') return <div className="lumiera-auth-shell"><TelegramRequiredPage /></div>
@@ -74,7 +85,7 @@ export function AdminEntryPage() {
         <header className="sa-mobile-topbar"><div><p className="text-lg font-black tracking-tight text-slate-950">Zastore Admin</p><p className="text-xs font-semibold text-slate-500">{user.firstName} {user.lastName}</p></div><div className="flex items-center gap-2"><button type="button" onClick={toggleTheme} className="sa-icon-button" aria-label={isDark ? 'Yorug‘ rejimga o‘tish' : 'Qorong‘i rejimga o‘tish'}>{isDark ? <Sun className="size-5" /> : <Moon className="size-5" />}</button><button type="button" onClick={() => void handleLogout()} className="sa-icon-button" aria-label="Chiqish"><LogOut className="size-5" /></button></div></header>
         <main className="sa-main"><Outlet /></main>
       </div>
-      <nav className="sa-mobile-bottom-nav" aria-label="Admin mobil navigatsiyasi"><Navigation mobile /></nav>
+      <nav ref={mobileNavRef} className="sa-mobile-bottom-nav" aria-label="Admin mobil navigatsiyasi"><Navigation mobile /></nav>
     </div>
   )
 }

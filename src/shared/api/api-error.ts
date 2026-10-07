@@ -24,6 +24,7 @@ export function normalizeApiError(error: unknown): ApiError {
     if (status === 403) return { status, message: 'Bu amal uchun ruxsatingiz yo‘q.' }
     if (status === 404) return { status, message: safeMessage || 'Ma’lumot topilmadi.' }
     if (status === 409) return { status, message: safeMessage || 'Bu amalni bajarib bo‘lmadi.' }
+    if (status === 503) return { status, message: 'Tizim yoki ma’lumotlar bazasi vaqtincha mavjud emas.' }
     if (status && status >= 500) return { status, message: 'Serverda xatolik yuz berdi.' }
 
     return { status, message: safeMessage || 'Tarmoqqa ulanishda xatolik yuz berdi.' }

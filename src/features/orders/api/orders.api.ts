@@ -8,6 +8,7 @@ export interface CreateOrderInput {
   items: Array<{ productId: string; quantity: number }>
   phone?: string
   deliveryAddress?: string
+  btcPostBranchNumber?: string
   latitude?: number
   longitude?: number
   note?: string
@@ -44,6 +45,7 @@ const orderSchema = z.object({
   }),
   phone: z.string().nullable(),
   deliveryAddress: z.string().nullable(),
+  btcPostBranchNumber: z.string().nullable().optional(),
   latitude: z.string().nullable(),
   longitude: z.string().nullable(),
   note: z.string().nullable(),

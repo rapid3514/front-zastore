@@ -13,25 +13,16 @@ function readStoredTheme(): ThemeMode | null {
   }
 }
 
-function getTelegramTheme(): ThemeMode | null {
-  const scheme = window.Telegram?.WebApp?.colorScheme
-  return scheme === 'light' || scheme === 'dark' ? scheme : null
-}
-
-function getSystemTheme(): ThemeMode {
-  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-}
-
 function applyThemeToDocument(theme: ThemeMode) {
   const root = document.documentElement
   root.classList.toggle('dark', theme === 'dark')
   root.dataset.theme = theme
   root.style.colorScheme = theme
-  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#211e20' : '#fcfaf7')
+  document.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.setAttribute('content', theme === 'dark' ? '#352b3e' : '#fff8fb')
 }
 
 const storedTheme = readStoredTheme()
-const initialTheme = storedTheme ?? getTelegramTheme() ?? getSystemTheme() ?? 'light'
+const initialTheme = storedTheme ?? 'light'
 
 interface ThemeState {
   theme: ThemeMode
@@ -63,6 +54,7 @@ export function initializeTheme() {
   applyThemeToDocument(useThemeStore.getState().theme)
 }
 
-export function syncThemeFromTelegram(theme?: ThemeMode) {
-  useThemeStore.getState().setAutomaticTheme(theme ?? getSystemTheme())
+export function syncThemeFromTelegram(_theme?: ThemeMode) {
+  // Keep the boutique bright unless the customer explicitly chooses dark mode.
+  useThemeStore.getState().setAutomaticTheme('light')
 }

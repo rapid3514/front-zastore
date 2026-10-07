@@ -3,7 +3,7 @@ import { ArrowLeft, Heart, Minus, Plus, ShoppingBag } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { useCartStore } from '@/features/cart/model/cart.store'
 import { useProduct } from '@/features/catalog/hooks/use-products'
-import { ShopImage } from '@/features/shop/components/ShopImage'
+import { ProductMediaGallery } from '@/features/shop/components/ProductMediaGallery'
 import { formatMoney } from '@/shared/lib/format'
 
 export function ShopProductDetailsPage() {
@@ -25,7 +25,7 @@ export function ShopProductDetailsPage() {
   return (
     <main className="page-container shop-page shop-product-detail">
       <div className="shop-detail-media">
-        <ShopImage name={product.name} imageUrl={product.imageUrl} className="aspect-square w-full" />
+        <ProductMediaGallery product={product} />
         <Link to="/catalog" className="shop-detail-circle shop-detail-back" aria-label="Katalogga qaytish"><ArrowLeft size={19} /></Link>
         <span className="shop-detail-circle shop-detail-heart" aria-hidden="true"><Heart size={19} /></span>
       </div>

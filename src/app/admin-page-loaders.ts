@@ -10,11 +10,14 @@ export const loadAdminReportsPage = () => import('@/pages/admin/AdminReportsPage
 export const loadAdminOrdersPage = () => import('@/pages/admin/AdminOrdersPage')
 export const loadAdminOrderDetailPage = () => import('@/pages/admin/AdminOrderDetailPage')
 export const loadAdminWorkHoursPage = () => import('@/pages/admin/AdminWorkHoursPage')
+export const loadAdminPaymentsPage = () => import('@/pages/admin/AdminPaymentsPage')
 export const loadAdminDetailsPage = () => import('@/pages/super-admin/AdminDetailsPage')
 export const loadAdminsPage = () => import('@/pages/super-admin/AdminsPage')
 export const loadSuperAdminDashboardPage = () => import('@/pages/super-admin/SuperAdminDashboardPage')
 export const loadSuperAdminUsersPage = () => import('@/pages/super-admin/SuperAdminUsersPage')
 export const loadSuperAdminProfilePage = () => import('@/pages/super-admin/SuperAdminProfilePage')
+export const loadAuditLogsPage = () => import('@/pages/super-admin/AuditLogsPage')
+export const loadSystemStatusPage = () => import('@/pages/super-admin/SystemStatusPage')
 export const loadSuperAdminLayout = () => import('@/shared/layout/SuperAdminLayout')
 
 function preload(loaders: PageLoader[]) {
@@ -47,10 +50,6 @@ export function preloadSuperAdminPages() {
     loadSuperAdminUsersPage,
     loadAdminsPage,
     loadAdminDetailsPage,
-    loadAdminProductsPage,
-    loadAdminCategoriesPage,
-    loadAdminOrdersPage,
-    loadAdminOrderDetailPage,
     loadSuperAdminProfilePage,
   ])
 }
