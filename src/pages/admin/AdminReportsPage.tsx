@@ -59,7 +59,6 @@ export function AdminReportsPage() {
           <div className="flex items-center justify-between gap-4"><div><h2 className="text-xl font-black text-slate-950">Katalog holati</h2><p className="mt-1 text-sm text-slate-500">Mahsulot va kategoriyalar</p></div><Boxes className="size-6 text-indigo-600" /></div>
           <div className="mt-5 space-y-3">
             <div className="flex items-center justify-between rounded-2xl bg-white/55 p-4"><span className="text-sm font-bold text-slate-600">Jami mahsulot</span><strong className="text-xl text-slate-950">{catalog.productsTotal}</strong></div>
-            <div className="flex items-center justify-between rounded-2xl bg-white/55 p-4"><span className="text-sm font-bold text-slate-600">Faol mahsulot</span><strong className="text-xl text-slate-950">{catalog.productsActive}</strong></div>
             <div className="flex items-center justify-between rounded-2xl bg-white/55 p-4"><span className="text-sm font-bold text-slate-600">Sotuvda mavjud</span><strong className="text-xl text-emerald-700">{catalog.productsAvailable}</strong></div>
             <div className="flex items-center justify-between rounded-2xl bg-white/55 p-4"><span className="text-sm font-bold text-slate-600">Faol kategoriyalar</span><strong className="text-xl text-slate-950">{catalog.categoriesActive} / {catalog.categoriesTotal}</strong></div>
           </div>

@@ -3,7 +3,8 @@ import { ArrowLeft, Loader2, Minus, Plus, ShoppingCart } from 'lucide-react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useProduct } from '@/features/catalog/hooks/use-products'
-import { getProductCoverUrl } from '@/features/catalog/lib/product-media'
+import { availabilityLabel, canOrderProduct } from '@/features/catalog/lib/product-availability'
+import { getProductCoverImage } from '@/features/catalog/lib/product-media'
 import { useCreateOrder } from '@/features/orders/hooks/use-orders'
 import { ShopImage } from '@/features/shop/components/ShopImage'
 import { normalizeApiError } from '@/shared/api/api-error'
@@ -54,7 +55,8 @@ export function OrderPage() {
   }
 
   const product = productQuery.data
-  const canOrder = product.isActive && product.isAvailable
+  const canOrder = canOrderProduct(product)
+  const cover = getProductCoverImage(product)
   const unitPriceInCents = Math.round(Number(product.price) * 100)
   const total = (unitPriceInCents * quantity) / 100
 
@@ -81,7 +83,9 @@ export function OrderPage() {
       <div className="shop-detail-media">
         <ShopImage
           name={product.name}
-          imageUrl={getProductCoverUrl(product)}
+          imageUrl={cover.src}
+          srcSet={cover.srcSet}
+          sizes="(max-width: 768px) 100vw, 600px"
           className="aspect-square w-full object-cover"
         />
         <Link to="/catalog" className="shop-detail-circle shop-detail-back" aria-label="Katalogga qaytish">
@@ -94,9 +98,10 @@ export function OrderPage() {
         <h1>{product.name}</h1>
         <p className="mt-2 text-sm font-semibold">Narxi</p>
         <strong className="shop-detail-price">{formatMoney(product.price)}</strong>
+        {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="mt-2 text-sm font-semibold text-amber-700">Kargo narxi: {formatMoney(product.cargoPrice)} (buyurtma jamiga kirmaydi)</p> : null}
 
         <span className={`shop-availability ${canOrder ? 'shop-availability-open' : ''}`}>
-          {canOrder ? 'Sotuvda mavjud' : 'Hozirda mavjud emas'}
+          {availabilityLabel(product.availabilityStatus)}
         </span>
 
         <div className="mt-6 space-y-4">

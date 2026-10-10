@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { ProductMedia, ProductMediaType } from '@/features/catalog/api/products.api'
 import { imageKitApi } from '../api/imagekit.api'
+import {
+  MEDIA_LIMITS,
+  validateMediaSelection,
+  type MediaSelectionResult,
+  type RejectedMediaFile,
+} from '../lib/media-policy'
 
 export type MediaUploadStatus = 'queued' | 'uploading' | 'ready' | 'failed'
 
@@ -20,17 +26,15 @@ export interface DraftProductMedia {
 
 export interface ProductMediaController {
   media: DraftProductMedia[]
-  appendFiles: (files: File[], type: ProductMediaType) => boolean
+  appendFiles: (files: readonly File[], type: ProductMediaType) => MediaSelectionResult
   remove: (localId: string) => Promise<void>
   reorderImage: (localId: string, direction: -1 | 1) => void
   retry: (localId: string) => void
   cleanupUnassigned: () => Promise<void>
   release: () => void
   maxImages: number
+  maxVideos: number
 }
-
-const MAX_IMAGES = 5
-const MAX_CONCURRENT_UPLOADS = 2
 
 function createLocalId() {
   return crypto.randomUUID()
@@ -58,12 +62,28 @@ function isAbortError(error: unknown) {
   return error instanceof DOMException && error.name === 'AbortError'
 }
 
+function uploadErrorMessage(error: unknown, fallback: string) {
+  if (!(error instanceof Error)) return fallback
+  if (/timeout|timed out|did not start/i.test(error.message)) {
+    return 'Ulanish vaqti tugadi. Internetni tekshirib, qayta urinib ko\'ring.'
+  }
+  return fallback
+}
+
 export function useProductMedia(initialMedia: ProductMedia[], onCleanupIssue: () => void) {
   const [media, setMedia] = useState<DraftProductMedia[]>(() => initialDraft(initialMedia))
   const mediaRef = useRef(media)
   const activeRef = useRef(0)
   const controllersRef = useRef(new Map<string, AbortController>())
   const uploadsRef = useRef(new Set<Promise<void>>())
+  const queueStoppedRef = useRef(false)
+  const revokedPreviewUrlsRef = useRef(new Set<string>())
+
+  const revokePreviewUrl = useCallback((url: string | undefined) => {
+    if (!url?.startsWith('blob:') || revokedPreviewUrlsRef.current.has(url)) return
+    revokedPreviewUrlsRef.current.add(url)
+    URL.revokeObjectURL(url)
+  }, [])
 
   const commitMedia = useCallback((change: (items: DraftProductMedia[]) => DraftProductMedia[]) => {
     const next = change(mediaRef.current)
@@ -83,7 +103,9 @@ export function useProductMedia(initialMedia: ProductMedia[], onCleanupIssue: ()
 
   const runQueueRef = useRef<() => void>(() => undefined)
   const runQueue = useCallback(() => {
-    while (activeRef.current < MAX_CONCURRENT_UPLOADS) {
+    if (queueStoppedRef.current) return
+
+    while (activeRef.current < MEDIA_LIMITS.uploadConcurrency) {
       const next = mediaRef.current.find((item) => item.status === 'queued' && item.file && !controllersRef.current.has(item.localId))
       if (!next?.file) return
       const controller = new AbortController()
@@ -96,12 +118,16 @@ export function useProductMedia(initialMedia: ProductMedia[], onCleanupIssue: ()
           let auth
           try {
             auth = await imageKitApi.getUploadAuth(controller.signal)
-          } catch {
+          } catch (error) {
             if (controller.signal.aborted) return
-            updateOne(next.localId, (item) => ({ ...item, status: 'failed', error: 'Media yuklashga ruxsat olinmadi.' }))
+            updateOne(next.localId, (item) => ({
+              ...item,
+              status: 'failed',
+              error: uploadErrorMessage(error, 'Media yuklashga ruxsat olinmadi.'),
+            }))
             return
           }
-          const uploaded = await imageKitApi.upload(next.file as File, auth, {
+          const uploaded = await imageKitApi.upload(next.file as File, next.type, auth, {
             signal: controller.signal,
             onProgress: (progress) => updateOne(next.localId, (item) => ({ ...item, progress })),
           })
@@ -115,7 +141,11 @@ export function useProductMedia(initialMedia: ProductMedia[], onCleanupIssue: ()
             }
           }
         } catch (error) {
-          if (!isAbortError(error)) updateOne(next.localId, (item) => ({ ...item, status: 'failed', error: 'Faylni yuklab bo‘lmadi.' }))
+          if (!isAbortError(error)) updateOne(next.localId, (item) => ({
+            ...item,
+            status: 'failed',
+            error: uploadErrorMessage(error, 'Faylni yuklab bo‘lmadi.'),
+          }))
         } finally {
           activeRef.current -= 1
           controllersRef.current.delete(next.localId)
@@ -128,6 +158,19 @@ export function useProductMedia(initialMedia: ProductMedia[], onCleanupIssue: ()
   }, [onCleanupIssue, updateOne])
 
   useEffect(() => {
+    // StrictMode replays setup after cleanup; each setup must reopen the queue.
+    queueStoppedRef.current = false
+    const controllers = controllersRef.current
+    return () => {
+      queueStoppedRef.current = true
+      controllers.forEach((controller) => controller.abort())
+      mediaRef.current.forEach((item) => {
+        revokePreviewUrl(item.previewUrl)
+      })
+    }
+  }, [revokePreviewUrl])
+
+  useEffect(() => {
     runQueueRef.current = runQueue
   }, [runQueue])
 
@@ -135,31 +178,55 @@ export function useProductMedia(initialMedia: ProductMedia[], onCleanupIssue: ()
     runQueue()
   }, [media, runQueue])
 
-  const appendFiles = useCallback((files: File[], type: ProductMediaType) => {
-    const available = type === 'IMAGE' ? Math.max(0, MAX_IMAGES - mediaRef.current.filter((item) => item.type === 'IMAGE').length) : 1
-    const accepted = files.slice(0, available)
-    if (!accepted.length) return false
-    const additions = accepted.map((file, index): DraftProductMedia => ({
-      localId: createLocalId(),
-      type,
-      file,
-      previewUrl: URL.createObjectURL(file),
-      position: type === 'IMAGE' ? mediaRef.current.filter((item) => item.type === 'IMAGE').length + index : 0,
-      progress: 0,
-      status: 'queued',
-      isExisting: false,
-    }))
-    commitMedia((items) => normalizePositions([...items, ...additions]))
-    return accepted.length === files.length
+  const appendFiles = useCallback((files: readonly File[], type: ProductMediaType): MediaSelectionResult => {
+    const result = validateMediaSelection(files, type, {
+      images: mediaRef.current.filter((item) => item.type === 'IMAGE').length,
+      videos: mediaRef.current.filter((item) => item.type === 'VIDEO').length,
+    })
+    const rejectedFiles: RejectedMediaFile[] = [...result.rejectedFiles]
+    const additions: DraftProductMedia[] = []
+    const imageCount = mediaRef.current.filter((item) => item.type === 'IMAGE').length
+
+    for (const file of result.acceptedFiles) {
+      try {
+        additions.push({
+          localId: createLocalId(),
+          type,
+          file,
+          previewUrl: URL.createObjectURL(file),
+          position: type === 'IMAGE' ? imageCount + additions.length : 0,
+          progress: 0,
+          status: 'queued',
+          isExisting: false,
+        })
+      } catch {
+        rejectedFiles.push({
+          file,
+          reason: {
+            code: 'PREVIEW_UNAVAILABLE',
+            message: 'Fayl uchun xavfsiz preview yaratib bo‘lmadi.',
+          },
+        })
+      }
+    }
+
+    if (additions.length) commitMedia((items) => normalizePositions([...items, ...additions]))
+
+    return {
+      acceptedFiles: additions.flatMap((item) => item.file ? [item.file] : []),
+      rejectedFiles,
+    }
   }, [commitMedia, normalizePositions])
 
-  const retry = useCallback((localId: string) => updateOne(localId, (item) => ({ ...item, status: 'queued', progress: 0, error: undefined })), [updateOne])
+  const retry = useCallback((localId: string) => updateOne(localId, (item) => item.status === 'failed'
+    ? { ...item, status: 'queued', progress: 0, error: undefined }
+    : item), [updateOne])
 
   const remove = useCallback(async (localId: string) => {
     const current = mediaRef.current.find((item) => item.localId === localId)
     if (!current) return
     controllersRef.current.get(localId)?.abort()
-    if (current.previewUrl?.startsWith('blob:')) URL.revokeObjectURL(current.previewUrl)
+    revokePreviewUrl(current.previewUrl)
     commitMedia((items) => normalizePositions(items.filter((item) => item.localId !== localId)))
     if (!current.isExisting && current.fileId) {
       try {
@@ -168,7 +235,7 @@ export function useProductMedia(initialMedia: ProductMedia[], onCleanupIssue: ()
         onCleanupIssue()
       }
     }
-  }, [commitMedia, normalizePositions, onCleanupIssue])
+  }, [commitMedia, normalizePositions, onCleanupIssue, revokePreviewUrl])
 
   const reorderImage = useCallback((localId: string, direction: -1 | 1) => {
     commitMedia((items) => {
@@ -184,6 +251,7 @@ export function useProductMedia(initialMedia: ProductMedia[], onCleanupIssue: ()
   }, [commitMedia, normalizePositions])
 
   const cleanupUnassigned = useCallback(async () => {
+    queueStoppedRef.current = true
     controllersRef.current.forEach((controller) => controller.abort())
     await Promise.allSettled([...uploadsRef.current])
     const items = mediaRef.current.filter((item) => !item.isExisting && item.fileId)
@@ -197,17 +265,21 @@ export function useProductMedia(initialMedia: ProductMedia[], onCleanupIssue: ()
   }, [onCleanupIssue])
 
   const release = useCallback(() => {
+    queueStoppedRef.current = true
     mediaRef.current.forEach((item) => {
-      if (item.previewUrl?.startsWith('blob:')) URL.revokeObjectURL(item.previewUrl)
+      revokePreviewUrl(item.previewUrl)
     })
-  }, [])
+  }, [revokePreviewUrl])
 
-  useEffect(() => () => {
-    controllersRef.current.forEach((controller) => controller.abort())
-    mediaRef.current.forEach((item) => {
-      if (item.previewUrl?.startsWith('blob:')) URL.revokeObjectURL(item.previewUrl)
-    })
-  }, [])
-
-  return { media, appendFiles, remove, reorderImage, retry, cleanupUnassigned, release, maxImages: MAX_IMAGES } satisfies ProductMediaController
+  return {
+    media,
+    appendFiles,
+    remove,
+    reorderImage,
+    retry,
+    cleanupUnassigned,
+    release,
+    maxImages: MEDIA_LIMITS.maxImages,
+    maxVideos: MEDIA_LIMITS.maxVideos,
+  } satisfies ProductMediaController
 }

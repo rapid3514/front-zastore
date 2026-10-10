@@ -17,9 +17,9 @@ function getHealthUrl() {
 }
 
 export const healthApi = {
-  async getStatus(): Promise<HealthStatus> {
+  async getStatus(signal?: AbortSignal): Promise<HealthStatus> {
     try {
-      const { data } = await api.get<unknown>(getHealthUrl())
+      const { data } = await api.get<unknown>(getHealthUrl(), { signal })
       return healthSchema.parse(data)
     } catch (cause) {
       if (cause instanceof AxiosError && cause.response?.status === 503) {

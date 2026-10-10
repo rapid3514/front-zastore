@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { api } from '@/shared/api/api'
+import { queryKeys } from '@/shared/query/query-keys'
 
 const categorySchema = z.object({
   id: z.string().uuid(),
@@ -22,23 +23,24 @@ export interface CategoryInput {
 }
 
 export const categoryKeys = {
-  all: ['categories'] as const,
-  public: () => [...categoryKeys.all, 'public'] as const,
-  manage: () => [...categoryKeys.all, 'manage'] as const,
-  detail: (id: string) => [...categoryKeys.all, 'detail', id] as const,
+  publicAll: queryKeys.public.categories(),
+  adminAll: queryKeys.admin.categories(),
+  public: () => queryKeys.public.categories('list'),
+  manage: () => queryKeys.admin.categories('list'),
+  detail: (id: string) => queryKeys.public.categories('detail', id),
 }
 
 export const categoriesApi = {
-  async getCategories(): Promise<Category[]> {
-    const { data } = await api.get<unknown>('/categories')
+  async getCategories(signal?: AbortSignal): Promise<Category[]> {
+    const { data } = await api.get<unknown>('/categories', { signal })
     return z.array(categorySchema).parse(data)
   },
-  async getCategoryById(id: string): Promise<Category> {
-    const { data } = await api.get<unknown>(`/categories/${id}`)
+  async getCategoryById(id: string, signal?: AbortSignal): Promise<Category> {
+    const { data } = await api.get<unknown>(`/categories/${id}`, { signal })
     return categorySchema.parse(data)
   },
-  async getManageCategories(): Promise<Category[]> {
-    const { data } = await api.get<unknown>('/categories/manage')
+  async getManageCategories(signal?: AbortSignal): Promise<Category[]> {
+    const { data } = await api.get<unknown>('/categories/manage', { signal })
     return z.array(categorySchema).parse(data)
   },
   async createCategory(input: CategoryInput): Promise<Category> {

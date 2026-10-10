@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { api } from '@/shared/api/api'
+import { queryKeys } from '@/shared/query/query-keys'
 
 export const auditActions = [
   'CATEGORY_CREATE', 'CATEGORY_UPDATE', 'CATEGORY_STATUS_CHANGE', 'CATEGORY_DELETE',
@@ -51,13 +52,13 @@ export interface AuditLogsParams {
 }
 
 export const auditKeys = {
-  all: ['audit-logs'] as const,
+  all: queryKeys.admin.audit(),
   list: (params: AuditLogsParams) => [...auditKeys.all, params] as const,
 }
 
 export const auditApi = {
-  async getLogs(params: AuditLogsParams): Promise<AuditLogsPage> {
-    const { data } = await api.get<unknown>('/audit-logs', { params })
+  async getLogs(params: AuditLogsParams, signal?: AbortSignal): Promise<AuditLogsPage> {
+    const { data } = await api.get<unknown>('/audit-logs', { params, signal })
     return auditLogsPageSchema.parse(data)
   },
 }

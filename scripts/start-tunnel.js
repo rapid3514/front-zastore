@@ -1,77 +1,73 @@
-require("dotenv").config();
+import { spawn } from 'node:child_process'
+import { fileURLToPath } from 'node:url'
 
-const { spawn } = require("child_process");
+const frontendOrigin = 'http://127.0.0.1:5173'
+const tunnelUrlPattern = /https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/
+const viteCliPath = fileURLToPath(new URL('../node_modules/vite/bin/vite.js', import.meta.url))
 
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const PORT = 3001;
-if (!BOT_TOKEN) {
-  console.error("BOT_TOKEN topilmadi");
-  process.exit(1);
+let viteProcess
+let shuttingDown = false
+let tunnelOutput = ''
+
+const cloudflared = spawn('cloudflared', ['tunnel', '--url', frontendOrigin], {
+  shell: false,
+  stdio: ['inherit', 'pipe', 'pipe'],
+})
+
+function stopChild(child) {
+  if (child && !child.killed) child.kill()
 }
 
-const cloudflared = spawn(
-  "cloudflared",
-  ["tunnel", "--url", `http://localhost:${PORT}`],
-  {
-    shell: true,
-  }
-);
+function shutdown(exitCode) {
+  if (shuttingDown) return
+  shuttingDown = true
+  stopChild(viteProcess)
+  stopChild(cloudflared)
+  process.exitCode = exitCode
+}
 
-let webhookSet = false;
+function startViteForTunnel(tunnelUrl) {
+  if (viteProcess) return
 
-cloudflared.stderr.on("data", async (data) => {
-  const text = data.toString();
+  const allowedHost = new URL(tunnelUrl).hostname
+  console.log(`\nCloudflare URL: ${tunnelUrl}`)
+  console.log(`Vite faqat ${allowedHost} tunnel hostiga ruxsat beradi.\n`)
 
-  process.stdout.write(text);
+  viteProcess = spawn(process.execPath, [viteCliPath], {
+    env: { ...process.env, VITE_DEV_ALLOWED_HOST: allowedHost },
+    shell: false,
+    stdio: 'inherit',
+  })
 
-  const match = text.match(
-    /https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/
-  );
+  viteProcess.on('error', (error) => {
+    console.error('Vite ishga tushmadi:', error)
+    shutdown(1)
+  })
 
-  if (match && !webhookSet) {
-    webhookSet = true;
+  viteProcess.on('close', (code) => {
+    if (!shuttingDown) shutdown(code ?? 1)
+  })
+}
 
-    const tunnelUrl = match[0];
+function inspectTunnelOutput(data, output) {
+  const message = data.toString()
+  output.write(message)
+  tunnelOutput = `${tunnelOutput}${message}`.slice(-8192)
+  const match = tunnelOutput.match(tunnelUrlPattern)
+  if (match) startViteForTunnel(match[0])
+}
 
-    const webhookUrl =
-      `${tunnelUrl}/api/v1/telegram/webhook`;
+cloudflared.stdout.on('data', (data) => inspectTunnelOutput(data, process.stdout))
+cloudflared.stderr.on('data', (data) => inspectTunnelOutput(data, process.stderr))
 
-    console.log("\nCloudflare URL:");
-    console.log(tunnelUrl);
+cloudflared.on('error', (error) => {
+  console.error('cloudflared ishga tushmadi:', error)
+  shutdown(1)
+})
 
-    console.log("\nWebhook yangilanmoqda...");
-    console.log(webhookUrl);
+cloudflared.on('close', (code) => {
+  if (!shuttingDown) shutdown(code ?? 1)
+})
 
-    try {
-      const response = await fetch(
-        `https://api.telegram.org/bot${BOT_TOKEN}/setWebhook`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            url: webhookUrl,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      console.log("\nTelegram javobi:");
-      console.log(result);
-
-      if (result.ok) {
-        console.log("\n✅ Webhook avtomatik yangilandi");
-      } else {
-        console.log("\n❌ Webhook yangilanmadi");
-      }
-    } catch (error) {
-      console.error("Webhook xatosi:", error);
-    }
-  }
-});
-
-cloudflared.on("close", (code) => {
-  console.log(`Cloudflare tunnel yopildi: ${code}`);
-});
+process.on('SIGINT', () => shutdown(0))
+process.on('SIGTERM', () => shutdown(0))

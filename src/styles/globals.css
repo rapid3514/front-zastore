@@ -1908,3 +1908,127 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @media (min-width: 90rem) {
   .presence-stats-grid-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 }
+
+/* Keep one light navigation blur on small screens and make nested surfaces opaque. */
+@media (max-width: 40rem) {
+  .shop-app .glass-card,
+  .shop-app .shop-search,
+  .shop-app .shop-sort,
+  .shop-app .shop-chip,
+  .shop-app .shop-category-card,
+  .shop-app .shop-detail-media,
+  .shop-app .shop-quantity,
+  .shop-app .shop-field input,
+  .shop-app .shop-field textarea,
+  .shop-app .profile-logout-button,
+  .shop-app .profile-header-card,
+  .shop-app .shop-success-page,
+  .shop-icon-button,
+  .shop-detail-circle,
+  .shop-success-check,
+  .shop-order-number,
+  .admin-layout .sa-glass,
+  .admin-layout .sa-icon-button,
+  .admin-layout .sa-input,
+  .admin-layout .sa-search,
+  .admin-layout .sa-filter-chip,
+  .lumiera-auth-shell .glass-card,
+  .lumiera-auth-shell .sa-glass,
+  .admin-modal-surface,
+  .admin-modal-surface .sa-dialog {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .shop-app .glass-card,
+  .shop-app .shop-search,
+  .shop-app .shop-sort,
+  .shop-app .shop-chip,
+  .shop-app .shop-category-card,
+  .shop-app .shop-detail-media,
+  .shop-app .shop-quantity,
+  .shop-app .shop-field input,
+  .shop-app .shop-field textarea,
+  .shop-app .profile-logout-button,
+  .shop-app .profile-header-card,
+  .shop-app .shop-success-page,
+  .shop-icon-button,
+  .shop-detail-circle,
+  .shop-success-check,
+  .shop-order-number,
+  .lumiera-auth-shell .glass-card,
+  .lumiera-auth-shell .sa-glass {
+    background-color: rgba(255, 252, 254, .96);
+  }
+
+  .admin-layout .sa-glass,
+  .admin-layout .sa-icon-button,
+  .admin-layout .sa-input,
+  .admin-layout .sa-search,
+  .admin-layout .sa-filter-chip,
+  .admin-modal-surface .sa-dialog {
+    background-color: rgba(255, 252, 254, .97);
+  }
+
+  .shop-header,
+  .shop-bottom-nav,
+  .shop-detail-actions,
+  .admin-layout .sa-mobile-topbar,
+  .admin-layout .sa-mobile-bottom-nav {
+    background-color: rgba(255, 252, 254, .94);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .shop-app::before,
+  .shop-success-page::before,
+  .shop-success-glow {
+    filter: none;
+  }
+
+  :root[data-theme='dark'] .shop-app .glass-card,
+  :root[data-theme='dark'] .shop-app .shop-search,
+  :root[data-theme='dark'] .shop-app .shop-sort,
+  :root[data-theme='dark'] .shop-app .shop-chip,
+  :root[data-theme='dark'] .shop-app .shop-category-card,
+  :root[data-theme='dark'] .shop-app .shop-detail-media,
+  :root[data-theme='dark'] .shop-app .shop-quantity,
+  :root[data-theme='dark'] .shop-app .shop-field input,
+  :root[data-theme='dark'] .shop-app .shop-field textarea,
+  :root[data-theme='dark'] .shop-app .profile-logout-button,
+  :root[data-theme='dark'] .shop-app .profile-header-card,
+  :root[data-theme='dark'] .shop-app .shop-success-page,
+  :root[data-theme='dark'] .shop-icon-button,
+  :root[data-theme='dark'] .shop-detail-circle,
+  :root[data-theme='dark'] .shop-success-check,
+  :root[data-theme='dark'] .shop-order-number,
+  :root[data-theme='dark'] .admin-layout .sa-glass,
+  :root[data-theme='dark'] .admin-layout .sa-icon-button,
+  :root[data-theme='dark'] .admin-layout .sa-input,
+  :root[data-theme='dark'] .admin-layout .sa-search,
+  :root[data-theme='dark'] .admin-layout .sa-filter-chip,
+  :root[data-theme='dark'] .lumiera-auth-shell .glass-card,
+  :root[data-theme='dark'] .lumiera-auth-shell .sa-glass,
+  :root[data-theme='dark'] .admin-modal-surface .sa-dialog {
+    background-color: rgba(67, 53, 77, .97);
+  }
+
+  :root[data-theme='dark'] .shop-header,
+  :root[data-theme='dark'] .shop-bottom-nav,
+  :root[data-theme='dark'] .shop-detail-actions,
+  :root[data-theme='dark'] .admin-layout .sa-mobile-topbar,
+  :root[data-theme='dark'] .admin-layout .sa-mobile-bottom-nav {
+    background-color: rgba(67, 53, 77, .96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .shop-app *,
+  .admin-layout *,
+  .lumiera-auth-shell * {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

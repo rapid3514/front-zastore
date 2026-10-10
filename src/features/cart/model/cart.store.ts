@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { Product } from '@/features/catalog/api/products.api'
+import type { Product, ProductAvailabilityStatus } from '@/features/catalog/api/products.api'
+import { canOrderProduct } from '@/features/catalog/lib/product-availability'
 import { getProductCoverUrl } from '@/features/catalog/lib/product-media'
 
 export interface CartItem {
@@ -8,8 +9,9 @@ export interface CartItem {
   name: string
   imageUrl?: string | null
   price: string
+  cargoPrice?: string | null
   quantity: number
-  isAvailable: boolean
+  availabilityStatus: ProductAvailabilityStatus
   category?: string
 }
 
@@ -28,12 +30,12 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       items: [],
       addItem: (product) => set((state) => {
-        if (!product.isActive || !product.isAvailable) return state
+        if (!canOrderProduct(product)) return state
         const existing = state.items.find((item) => item.productId === product.id)
         if (existing) {
-          return { items: state.items.map((item) => item.productId === product.id ? { ...item, quantity: item.quantity + 1, isAvailable: product.isAvailable, price: product.price } : item) }
+          return { items: state.items.map((item) => item.productId === product.id ? { ...item, quantity: item.quantity + 1, availabilityStatus: product.availabilityStatus, cargoPrice: product.cargoPrice, price: product.price } : item) }
         }
-        return { items: [...state.items, { productId: product.id, name: product.name, category: product.category.name, imageUrl: getProductCoverUrl(product), price: product.price, quantity: 1, isAvailable: product.isAvailable }] }
+        return { items: [...state.items, { productId: product.id, name: product.name, category: product.category.name, imageUrl: getProductCoverUrl(product), price: product.price, cargoPrice: product.cargoPrice, quantity: 1, availabilityStatus: product.availabilityStatus }] }
       }),
       removeItem: (productId) => set((state) => ({ items: state.items.filter((item) => item.productId !== productId) })),
       increaseQuantity: (productId) => set((state) => ({ items: state.items.map((item) => item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item) })),
@@ -41,7 +43,26 @@ export const useCartStore = create<CartState>()(
       setQuantity: (productId, quantity) => set((state) => ({ items: state.items.map((item) => item.productId === productId ? { ...item, quantity: Math.max(1, Math.floor(quantity) || 1) } : item) })),
       clearCart: () => set({ items: [] }),
     }),
-    { name: 'zastore-shop-cart-v2', partialize: (state) => ({ items: state.items }) },
+    {
+      name: 'zastore-shop-cart-v2',
+      version: 1,
+      partialize: (state) => ({ items: state.items }),
+      migrate: (persistedState) => {
+        const previous = persistedState as { items?: Array<Omit<CartItem, 'availabilityStatus'> & { availabilityStatus?: ProductAvailabilityStatus; isAvailable?: boolean }> }
+        return {
+          items: (previous.items ?? []).map((item): CartItem => ({
+            productId: item.productId,
+            name: item.name,
+            imageUrl: item.imageUrl,
+            price: item.price,
+            cargoPrice: item.cargoPrice,
+            quantity: item.quantity,
+            category: item.category,
+            availabilityStatus: item.availabilityStatus ?? (item.isAvailable === false ? 'OUT_OF_STOCK' : 'IN_STOCK'),
+          })),
+        }
+      },
+    },
   ),
 )
 

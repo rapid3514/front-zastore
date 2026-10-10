@@ -39,31 +39,31 @@ function parseAdmin(data: unknown): AdminUser {
 }
 
 export const superAdminApi = {
-  async getDashboardStats(): Promise<SuperAdminStats> {
-    const { data } = await api.get<unknown>('/super-admin/dashboard/stats')
+  async getDashboardStats(signal?: AbortSignal): Promise<SuperAdminStats> {
+    const { data } = await api.get<unknown>('/super-admin/dashboard/stats', { signal })
     return superAdminStatsSchema.parse(data)
   },
 
-  async getUsers(params: GetSuperAdminUsersParams): Promise<UsersPage> {
-    const { data } = await api.get<unknown>('/super-admin/users', { params })
+  async getUsers(params: GetSuperAdminUsersParams, signal?: AbortSignal): Promise<UsersPage> {
+    const { data } = await api.get<unknown>('/super-admin/users', { params, signal })
     return parseUsersPage(data)
   },
 
-  async getMyAdminProfile(): Promise<AdminUser> {
-    const { data } = await api.get<unknown>("/admins/me");
+  async getMyAdminProfile(signal?: AbortSignal): Promise<AdminUser> {
+    const { data } = await api.get<unknown>("/admins/me", { signal });
     return parseAdmin(data);
   },
 
-  async getAdmins(): Promise<AdminUser[]> {
-    const { data } = await api.get<unknown>("/admins");
+  async getAdmins(signal?: AbortSignal): Promise<AdminUser[]> {
+    const { data } = await api.get<unknown>("/admins", { signal });
     return z
       .array(adminUserSchema)
       .parse(data)
       .filter((admin) => admin.role === "ADMIN");
   },
 
-  async getAdmin(userId: string): Promise<AdminUser> {
-    const { data } = await api.get<unknown>(`/admins/${userId}`);
+  async getAdmin(userId: string, signal?: AbortSignal): Promise<AdminUser> {
+    const { data } = await api.get<unknown>(`/admins/${userId}`, { signal });
     return parseAdmin(data);
   },
 

@@ -26,8 +26,8 @@ const usersPageSchema = z.object({
 })
 
 export const usersApi = {
-  async getUsers(params: GetUsersParams): Promise<UsersPage> {
-    const { data } = await api.get<unknown>('/users', { params })
+  async getUsers(params: GetUsersParams, signal?: AbortSignal): Promise<UsersPage> {
+    const { data } = await api.get<unknown>('/users', { params, signal })
     return usersPageSchema.parse(data)
   },
 }

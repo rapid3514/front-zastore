@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { api } from '@/shared/api/api'
+import { queryKeys } from '@/shared/query/query-keys'
 
 export const weekDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'] as const
 export type WeekDay = typeof weekDays[number]
@@ -42,18 +43,19 @@ function parseSchedule(data: unknown): WorkHour[] {
 }
 
 export const workHoursKeys = {
-  all: ['work-hours'] as const,
-  status: () => [...workHoursKeys.all, 'status'] as const,
-  manage: () => [...workHoursKeys.all, 'manage'] as const,
+  publicAll: queryKeys.public.workHours(),
+  adminAll: queryKeys.admin.workHours(),
+  status: () => queryKeys.public.workHours('status'),
+  manage: () => queryKeys.admin.workHours('schedule'),
 }
 
 export const workHoursApi = {
-  async getStatus(): Promise<WorkHoursStatus> {
-    const { data } = await api.get<unknown>('/work-hours/status')
+  async getStatus(signal?: AbortSignal): Promise<WorkHoursStatus> {
+    const { data } = await api.get<unknown>('/work-hours/status', { signal })
     return workHoursStatusSchema.parse(data)
   },
-  async getManage(): Promise<WorkHour[]> {
-    const { data } = await api.get<unknown>('/work-hours/manage')
+  async getManage(signal?: AbortSignal): Promise<WorkHour[]> {
+    const { data } = await api.get<unknown>('/work-hours/manage', { signal })
     return parseSchedule(data)
   },
   async update(input: WorkHourInput[]): Promise<WorkHour[]> {

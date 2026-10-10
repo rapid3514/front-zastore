@@ -11,32 +11,50 @@ type BootstrapResult =
   | { type: 'unauthenticated' }
   | { type: 'error'; message: string }
 
-let bootstrapPromise: Promise<BootstrapResult> | null = null
+interface BootstrapState {
+  controller: AbortController
+  generation: number
+  promise: Promise<BootstrapResult>
+}
 
-function getBootstrapResult(): Promise<BootstrapResult> {
-  if (!bootstrapPromise) {
-    bootstrapPromise = (async () => {
+let bootstrapGeneration = 0
+let bootstrapState: BootstrapState | null = null
+
+function getBootstrapState(): BootstrapState {
+  if (!bootstrapState || bootstrapState.generation !== bootstrapGeneration) {
+    const controller = new AbortController()
+    const generation = bootstrapGeneration
+    const promise = (async () => {
       const initData = getTelegramInitData()
 
       try {
         if (initData) {
-          const response = await authApi.telegramLogin(initData)
+          const response = await authApi.telegramLogin(initData, controller.signal)
           return response.registered
             ? { type: 'authenticated', accessToken: response.accessToken, user: response.user }
             : { type: 'registration-required' }
         }
 
-        const refresh = await authApi.refresh()
+        const refresh = await authApi.refresh(controller.signal)
         return { type: 'authenticated', accessToken: refresh.accessToken, user: refresh.user }
       } catch (error) {
         return isTelegramEnvironment()
           ? { type: 'error', message: normalizeApiError(error).message }
           : { type: 'unauthenticated' }
       }
-    })()
+    })() satisfies Promise<BootstrapResult>
+    bootstrapState = { controller, generation, promise }
   }
 
-  return bootstrapPromise
+  return bootstrapState
+}
+
+/** Invalidate bootstrap work so a late auth response cannot restore a logged-out session. */
+export function cancelAuthBootstrap(): void {
+  bootstrapGeneration += 1
+  const activeBootstrap = bootstrapState
+  bootstrapState = null
+  activeBootstrap?.controller.abort()
 }
 
 export function useAuthBootstrap() {
@@ -47,8 +65,9 @@ export function useAuthBootstrap() {
     let active = true
     useAuthStore.getState().setLoading()
 
-    void getBootstrapResult().then((result) => {
-      if (!active) return
+    const bootstrap = getBootstrapState()
+    void bootstrap.promise.then((result) => {
+      if (!active || bootstrap.generation !== bootstrapGeneration) return
 
       const store = useAuthStore.getState()
       if (result.type === 'authenticated') store.setAuthenticated(result.accessToken, result.user)

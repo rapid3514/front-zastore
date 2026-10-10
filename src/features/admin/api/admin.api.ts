@@ -21,13 +21,13 @@ const adminStatsSchema = z.object({
 })
 
 export const adminApi = {
-  async getDashboardStats(): Promise<AdminStats> {
-    const { data } = await api.get<unknown>('/admin/dashboard/stats')
+  async getDashboardStats(signal?: AbortSignal): Promise<AdminStats> {
+    const { data } = await api.get<unknown>('/admin/dashboard/stats', { signal })
     return adminStatsSchema.parse(data)
   },
 
-  async getCustomers(params: GetCustomersParams): Promise<UsersPage> {
-    const { data } = await api.get<unknown>('/admin/customers', { params })
+  async getCustomers(params: GetCustomersParams, signal?: AbortSignal): Promise<UsersPage> {
+    const { data } = await api.get<unknown>('/admin/customers', { params, signal })
     const page = parseUsersPage(data)
     return { ...page, data: page.data.filter((user) => user.role === 'CUSTOMER') }
   },

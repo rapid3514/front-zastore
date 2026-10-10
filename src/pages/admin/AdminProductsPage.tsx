@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Camera, Loader2, Pencil, Plus, RefreshCw, Search, Send, Trash2, Video } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { Product, ProductInput, ProductMediaInput, TelegramSyncStatus } from '@/features/catalog/api/products.api'
+import type { Product, ProductAvailabilityStatus, ProductInput, ProductMediaInput, TelegramSyncStatus } from '@/features/catalog/api/products.api'
+import { availabilityBadgeClass, availabilityLabel, availabilityOptions } from '@/features/catalog/lib/product-availability'
 import { getProductCoverUrl } from '@/features/catalog/lib/product-media'
 import { useManageCategories } from '@/features/catalog/hooks/use-categories'
 import { useManageProduct, useManageProducts, useProductMutations } from '@/features/catalog/hooks/use-products'
@@ -31,9 +32,9 @@ function ProductFormContent({ product, onClose, categoriesPath }: ProductFormPro
   const [name, setName] = useState(product?.name ?? '')
   const [description, setDescription] = useState(product?.description ?? '')
   const [price, setPrice] = useState(product?.price ?? '')
+  const [cargoPrice, setCargoPrice] = useState(product?.cargoPrice ?? '')
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? '')
-  const [isAvailable, setIsAvailable] = useState(product?.isAvailable ?? true)
-  const [isActive, setIsActive] = useState(product?.isActive ?? true)
+  const [availabilityStatus, setAvailabilityStatus] = useState<ProductAvailabilityStatus>(product?.availabilityStatus ?? 'IN_STOCK')
   const [error, setError] = useState('')
   const categories = useManageCategories()
   const { create, update } = useProductMutations()
@@ -60,9 +61,10 @@ function ProductFormContent({ product, onClose, categoriesPath }: ProductFormPro
     if (name.trim().length < 2 || name.trim().length > 150) { setError('Nomi 2–150 belgidan iborat bo‘lishi kerak.'); return }
     if (!categoryId) { setError('Kategoriya tanlang.'); return }
     if (!Number.isFinite(amount) || amount < 0.01 || amount > 99999999.99 || Math.round(amount * 100) !== amount * 100) { setError('Narx 0.01 dan 99 999 999.99 gacha bo‘lishi kerak.'); return }
+    if (availabilityStatus === 'ARRIVING_IN_14_DAYS' && (!/^\d+(\.\d{1,2})?$/.test(cargoPrice.trim()) || Number(cargoPrice) < 0.01 || Number(cargoPrice) > 99999999.99)) { setError('14 kunda keladigan mahsulot uchun kargo narxini kiriting (0.01–99 999 999.99).'); return }
     if (isUploading) { setError('Media yuklanmoqda. Yuklash tugagach saqlang.'); return }
     if (hasFailedMedia) { setError('Yuklanmagan media mavjud. Qayta urinib ko‘ring yoki olib tashlang.'); return }
-    const input: ProductInput = { name: name.trim(), description: description.trim() || null, price: amount, categoryId, media, isAvailable, isActive }
+    const input: ProductInput = { name: name.trim(), description: description.trim() || null, price: amount, categoryId, media, availabilityStatus, ...(availabilityStatus === 'ARRIVING_IN_14_DAYS' ? { cargoPrice: Number(cargoPrice) } : {}) }
     try {
       if (product) await update.mutateAsync({ id: product.id, input })
       else await create.mutateAsync(input)
@@ -83,10 +85,10 @@ function ProductFormContent({ product, onClose, categoriesPath }: ProductFormPro
       {categories.isError ? <p className="text-sm text-red-600">Kategoriyalarni yuklab bo‘lmadi. <button type="button" className="underline" onClick={() => void categories.refetch()}>Qayta urinish</button></p> : null}
       {categories.data?.length === 0 ? <p className="text-sm text-slate-600">Avval <Link to={categoriesPath} onClick={() => void closeWithCleanup()} className="font-bold underline">kategoriya yarating</Link>.</p> : null}
       <label className="block text-sm font-bold text-slate-700">Narx *<input required type="number" min={0.01} max={99999999.99} step="0.01" className="sa-input mt-2" value={price} onChange={(event) => setPrice(event.target.value)} /></label>
+      <label className="block text-sm font-bold text-slate-700">Sotuv holati *<select required className="sa-input mt-2" value={availabilityStatus} onChange={(event) => { const status = event.target.value as ProductAvailabilityStatus; setAvailabilityStatus(status); if (status !== 'ARRIVING_IN_14_DAYS') setCargoPrice('') }}>{availabilityOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
+      {availabilityStatus === 'ARRIVING_IN_14_DAYS' ? <label className="block text-sm font-bold text-slate-700">Kargo narxi *<input required type="number" min={0.01} max={99999999.99} step="0.01" className="sa-input mt-2" value={cargoPrice} onChange={(event) => setCargoPrice(event.target.value)} placeholder="Kargo narxini kiriting" /><span className="mt-1 block text-xs font-medium text-slate-500">Faqat 14 kunda keladigan mahsulot uchun.</span></label> : null}
       <label className="block text-sm font-bold text-slate-700">Tavsif<textarea maxLength={2000} className="sa-input mt-2 min-h-24" value={description} onChange={(event) => setDescription(event.target.value)} /></label>
       <ProductMediaUploader controller={mediaController} onError={setError} disabled={pending} />
-      <label className="flex items-center gap-3 text-sm font-bold text-slate-700"><input type="checkbox" checked={isAvailable} onChange={(event) => setIsAvailable(event.target.checked)} />Bugun mavjud</label>
-      <label className="flex items-center gap-3 text-sm font-bold text-slate-700"><input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} />Menyuda faol</label>
       {error ? <p role="alert" className="text-sm font-semibold text-red-600">{error}</p> : null}
       <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="outline" disabled={pending} onClick={() => void closeWithCleanup()}>Bekor qilish</Button><Button type="submit" disabled={pending || isUploading || hasFailedMedia || !categories.data?.length}>{pending || isUploading ? <Loader2 className="size-4 animate-spin" /> : null}{isUploading ? 'Media yuklanmoqda...' : pending ? 'Saqlanmoqda...' : 'Saqlash'}</Button></div>
     </form>
@@ -112,7 +114,7 @@ export function AdminProductsPage() {
   const { update, remove, syncTelegram } = useProductMutations()
   const showToast = useToastStore((state) => state.show)
   useEffect(() => { const timer = window.setTimeout(() => { setSearch(query.trim()); setPage(1) }, 350); return () => window.clearTimeout(timer) }, [query])
-  async function toggle(product: Product, field: 'isAvailable' | 'isActive') { try { await update.mutateAsync({ id: product.id, input: { [field]: !product[field] } }); showToast('Mahsulot holati yangilandi') } catch (cause) { showToast(catalogError(cause), 'error') } }
+  async function toggleStock(product: Product) { try { await update.mutateAsync({ id: product.id, input: { availabilityStatus: product.availabilityStatus === 'IN_STOCK' ? 'OUT_OF_STOCK' : 'IN_STOCK' } }); showToast('Mahsulot holati yangilandi') } catch (cause) { showToast(catalogError(cause), 'error') } }
   async function deleteProduct() { if (!deleting) return; try { await remove.mutateAsync(deleting.id); showToast('Mahsulot o‘chirildi yoki arxivlandi'); setDeleting(null) } catch (cause) { showToast(catalogError(cause), 'error'); setDeleting(null) } }
   async function retrySync(product: Product) { try { await syncTelegram.mutateAsync({ id: product.id }); showToast('Telegramga qayta yuborildi') } catch (cause) { showToast(catalogError(cause), 'error') } }
   async function forceRepublish() { if (!republishing) return; try { await syncTelegram.mutateAsync({ id: republishing.id, forceRepublish: true }); showToast('Telegramga qaytadan joylandi'); setRepublishing(null) } catch (cause) { showToast(catalogError(cause), 'error') } }
@@ -127,7 +129,25 @@ export function AdminProductsPage() {
       const imageCount = product.media.filter((item) => item.type === 'IMAGE').length
       const videoCount = product.media.filter((item) => item.type === 'VIDEO').length
       const cover = getProductCoverUrl(product)
-      return <article key={product.id} className="sa-glass min-w-0 rounded-2xl p-4 sm:p-5"><div className="flex items-start gap-3">{cover ? <img src={cover} alt="" loading="lazy" decoding="async" className="size-16 rounded-xl object-cover" /> : <div className="grid size-16 place-items-center rounded-xl bg-white/50 text-slate-400"><Camera className="size-5" /></div>}<div className="min-w-0 flex-1"><div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate text-lg font-extrabold text-slate-950">{product.name}</h2><p className="text-sm text-slate-500">{product.category.name} · {formatMoney(product.price)}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-xs font-bold ${product.isAvailable ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>{product.isAvailable ? 'Mavjud' : 'Mavjud emas'}</span></div><p className="mt-2 flex flex-wrap gap-3 text-xs font-semibold text-slate-500"><span className="inline-flex items-center gap-1"><Camera className="size-3" />{imageCount}</span><span className="inline-flex items-center gap-1"><Video className="size-3" />{videoCount}</span><span>{syncLabel(product.telegramSyncStatus)}</span></p></div></div><div className="mt-3 flex flex-wrap gap-2"><Button type="button" variant="outline" disabled={update.isPending} onClick={() => void toggle(product, 'isAvailable')}>{product.isAvailable ? 'Mavjud emas' : 'Bugun mavjud'}</Button><Button type="button" variant="outline" disabled={update.isPending} onClick={() => void toggle(product, 'isActive')}>{product.isActive ? 'Katalogdan yashirish' : 'Katalogda ko‘rsatish'}</Button>{product.telegramSyncStatus === 'FAILED' ? <Button type="button" variant="outline" disabled={syncTelegram.isPending} onClick={() => void retrySync(product)}><Send className="size-4" />Qayta yuborish</Button> : null}<Button type="button" variant="outline" disabled={syncTelegram.isPending} onClick={() => setRepublishing(product)}><RefreshCw className="size-4" />Telegramga qaytadan joylash</Button><Button type="button" variant="outline" onClick={() => setFormProduct(product)}><Pencil className="size-4" />Tahrirlash</Button><Button type="button" variant="outline" className="text-red-600" onClick={() => setDeleting(product)}><Trash2 className="size-4" />O‘chirish</Button></div></article>
+      return <article key={product.id} className="sa-glass min-w-0 rounded-2xl p-4 sm:p-5">
+        <div className="flex items-start gap-3">
+          {cover ? <img src={cover} alt="" loading="lazy" decoding="async" className="size-16 rounded-xl object-cover" /> : <div className="grid size-16 place-items-center rounded-xl bg-white/50 text-slate-400"><Camera className="size-5" /></div>}
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0"><h2 className="truncate text-lg font-extrabold text-slate-950">{product.name}</h2><p className="text-sm text-slate-500">{product.category.name} · {formatMoney(product.price)}</p>{product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="text-sm text-amber-700">Kargo: {formatMoney(product.cargoPrice)}</p> : null}</div>
+              <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-bold ${availabilityBadgeClass(product.availabilityStatus)}`}>{availabilityLabel(product.availabilityStatus)}</span>
+            </div>
+            <p className="mt-2 flex flex-wrap gap-3 text-xs font-semibold text-slate-500"><span className="inline-flex items-center gap-1"><Camera className="size-3" />{imageCount}</span><span className="inline-flex items-center gap-1"><Video className="size-3" />{videoCount}</span><span>{syncLabel(product.telegramSyncStatus)}</span></p>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {product.availabilityStatus !== 'ARRIVING_IN_14_DAYS' ? <Button type="button" variant="outline" disabled={update.isPending} onClick={() => void toggleStock(product)}>{product.availabilityStatus === 'IN_STOCK' ? 'Sotuvda yo‘q' : 'Sotuvda bor'}</Button> : null}
+          {product.telegramSyncStatus === 'FAILED' ? <Button type="button" variant="outline" disabled={syncTelegram.isPending} onClick={() => void retrySync(product)}><Send className="size-4" />Qayta yuborish</Button> : null}
+          <Button type="button" variant="outline" disabled={syncTelegram.isPending} onClick={() => setRepublishing(product)}><RefreshCw className="size-4" />Telegramga qaytadan joylash</Button>
+          <Button type="button" variant="outline" onClick={() => setFormProduct(product)}><Pencil className="size-4" />Tahrirlash</Button>
+          <Button type="button" variant="outline" className="text-red-600" onClick={() => setDeleting(product)}><Trash2 className="size-4" />O‘chirish</Button>
+        </div>
+      </article>
     })}</div>
     {products.data && products.data.meta.totalPages > 1 ? <div className="flex items-center justify-center gap-3"><Button type="button" variant="outline" disabled={page <= 1} onClick={() => setPage(page - 1)}>Oldingi</Button><span className="text-sm font-bold">{page} / {products.data.meta.totalPages}</span><Button type="button" variant="outline" disabled={page >= products.data.meta.totalPages} onClick={() => setPage(page + 1)}>Keyingi</Button></div> : null}
     {formProduct !== undefined ? <ProductForm product={formProduct} categoriesPath={categoriesPath} onClose={() => setFormProduct(undefined)} /> : null}

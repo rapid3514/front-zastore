@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { api } from '@/shared/api/api'
+import { queryKeys } from '@/shared/query/query-keys'
 
 export const orderStatuses = ['PENDING_CONFIRMATION', 'CONFIRMED', 'PROCESSING', 'COMPLETED', 'CANCELLED', 'EXPIRED'] as const
 export type OrderStatus = typeof orderStatuses[number]
@@ -83,7 +84,6 @@ const orderManagementSummarySchema = z.object({
   }),
   catalog: z.object({
     productsTotal: z.number().int().nonnegative(),
-    productsActive: z.number().int().nonnegative(),
     productsAvailable: z.number().int().nonnegative(),
     categoriesTotal: z.number().int().nonnegative(),
     categoriesActive: z.number().int().nonnegative(),
@@ -94,41 +94,44 @@ const orderManagementSummarySchema = z.object({
 export type OrderManagementSummary = z.infer<typeof orderManagementSummarySchema>
 
 export const orderKeys = {
-  all: ['orders'] as const,
-  mine: (params: OrdersParams) => [...orderKeys.all, 'mine', params] as const,
-  mineDetail: (id: string) => [...orderKeys.all, 'mine-detail', id] as const,
-  manage: (params: OrdersParams) => [...orderKeys.all, 'manage', params] as const,
-  manageDetail: (id: string) => [...orderKeys.all, 'manage-detail', id] as const,
-  manageSummary: () => [...orderKeys.all, 'manage-summary'] as const,
+  sessionAll: () => queryKeys.session.orders(),
+  mineLists: () => queryKeys.session.orders('list', 'mine'),
+  mine: (params: OrdersParams) => queryKeys.session.orders('list', 'mine', params),
+  mineDetail: (id: string) => queryKeys.session.orders('detail', id),
+  adminAll: () => queryKeys.admin.orders(),
+  manageLists: () => queryKeys.admin.orders('list'),
+  manage: (params: OrdersParams) => queryKeys.admin.orders('list', params),
+  manageDetail: (id: string) => queryKeys.admin.orders('detail', id),
+  manageSummary: () => queryKeys.admin.orders('summary'),
 }
 
 export const ordersApi = {
-  async create(input: CreateOrderInput) {
-    const { data } = await api.post<unknown>('/orders', input)
+  async create(input: CreateOrderInput, idempotencyKey: string) {
+    const { data } = await api.post<unknown>('/orders', input, { headers: { 'Idempotency-Key': idempotencyKey } })
     return orderSchema.parse(data)
   },
-  async getMine(params: OrdersParams) {
-    const { data } = await api.get<unknown>('/orders/my', { params })
+  async getMine(params: OrdersParams, signal?: AbortSignal) {
+    const { data } = await api.get<unknown>('/orders/my', { params, signal })
     return ordersPageSchema.parse(data)
   },
-  async getById(id: string) {
-    const { data } = await api.get<unknown>(`/orders/my/${id}`)
+  async getById(id: string, signal?: AbortSignal) {
+    const { data } = await api.get<unknown>(`/orders/my/${id}`, { signal })
     return orderSchema.parse(data)
   },
   async cancel(id: string, reason?: string) {
     const { data } = await api.patch<unknown>(`/orders/${id}/cancel`, reason ? { reason } : undefined)
     return orderSchema.parse(data)
   },
-  async manage(params: OrdersParams) {
-    const { data } = await api.get<unknown>('/orders/manage', { params })
+  async manage(params: OrdersParams, signal?: AbortSignal) {
+    const { data } = await api.get<unknown>('/orders/manage', { params, signal })
     return ordersPageSchema.parse(data)
   },
-  async manageById(id: string) {
-    const { data } = await api.get<unknown>(`/orders/manage/${id}`)
+  async manageById(id: string, signal?: AbortSignal) {
+    const { data } = await api.get<unknown>(`/orders/manage/${id}`, { signal })
     return orderSchema.parse(data)
   },
-  async manageSummary() {
-    const { data } = await api.get<unknown>('/orders/manage/summary')
+  async manageSummary(signal?: AbortSignal) {
+    const { data } = await api.get<unknown>('/orders/manage/summary', { signal })
     return orderManagementSummarySchema.parse(data)
   },
   async confirm(id: string) {

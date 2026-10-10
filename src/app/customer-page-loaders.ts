@@ -1,0 +1,8 @@
+export const loadCartPage = () => import('@/pages/cart/CartPage')
+export const loadCheckoutPage = () => import('@/pages/cart/CheckoutPage')
+export const loadOrderSuccessPage = () => import('@/pages/cart/OrderSuccessPage')
+export const loadOrderPage = () => import('@/pages/order/OrderPage')
+export const loadProfilePage = () => import('@/pages/profile/ProfilePage')
+export const loadShopProductDetailsPage = () => import('@/pages/shop/ShopProductDetailsPage')
+export const loadShopOrdersPage = () => import('@/pages/shop/ShopOrdersPage')
+export const loadShopOrderDetailPage = () => import('@/pages/shop/ShopOrderDetailPage')

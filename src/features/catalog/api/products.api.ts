@@ -1,11 +1,23 @@
 import { z } from "zod";
 import { api } from "@/shared/api/api";
+import { queryKeys } from "@/shared/query/query-keys";
 
 export const productMediaTypes = ["IMAGE", "VIDEO"] as const;
 export type ProductMediaType = (typeof productMediaTypes)[number];
+export const productAvailabilityStatuses = ["IN_STOCK", "ARRIVING_IN_14_DAYS", "OUT_OF_STOCK"] as const;
+export type ProductAvailabilityStatus = (typeof productAvailabilityStatuses)[number];
+
+const imageVariantsSchema = z.object({
+  thumbnail: z.string().url(),
+  card: z.string().url(),
+  detail: z.string().url(),
+  srcSet: z.string(),
+});
+
+export type ProductImageVariants = z.infer<typeof imageVariantsSchema>;
 
 const productMediaSchema = z.object({
-  id: z.string().optional(),
+  id: z.string().nullable().optional(),
   type: z.enum(productMediaTypes),
   // Public product responses intentionally omit the private ImageKit fileId.
   fileId: z.string().optional(),
@@ -14,6 +26,8 @@ const productMediaSchema = z.object({
   mimeType: z.string().nullable().optional(),
   width: z.number().int().nullable().optional(),
   height: z.number().int().nullable().optional(),
+  variants: imageVariantsSchema.nullable().optional(),
+  posterUrl: z.string().url().nullable().optional(),
 });
 
 export type ProductMedia = z.infer<typeof productMediaSchema>;
@@ -28,9 +42,11 @@ export type TelegramSyncStatus = "PENDING" | "SYNCED" | "FAILED";
 const productSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
-  description: z.string().nullable(),
+  description: z.string().nullable().optional().default(null),
   price: z.string(),
+  cargoPrice: z.string().nullable().optional(),
   imageUrl: z.string().nullable().optional().default(null),
+  imageVariants: imageVariantsSchema.nullable().optional(),
   imageFileId: z.string().nullable().optional(),
   media: z.array(productMediaSchema).optional().default([]),
   telegramSyncStatus: z.enum(["PENDING", "SYNCED", "FAILED"]).optional(),
@@ -44,10 +60,9 @@ const productSchema = z.object({
     name: z.string(),
     slug: z.string(),
   }),
-  isAvailable: z.boolean(),
-  isActive: z.boolean(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  availabilityStatus: z.enum(productAvailabilityStatuses),
+  createdAt: z.string().optional().default(''),
+  updatedAt: z.string().optional().default(''),
 });
 
 export type Product = z.infer<typeof productSchema>;
@@ -55,18 +70,17 @@ export interface ProductInput {
   name: string;
   description?: string | null;
   price: number;
+  cargoPrice?: number;
   categoryId: string;
   media?: ProductMediaInput[];
-  isAvailable?: boolean;
-  isActive?: boolean;
+  availabilityStatus?: ProductAvailabilityStatus;
 }
 export interface ProductsParams {
   page?: number;
   limit?: number;
   categoryId?: string;
   search?: string;
-  isAvailable?: boolean;
-  isActive?: boolean;
+  availabilityStatus?: ProductAvailabilityStatus;
 }
 
 const productsPageSchema = z.object({
@@ -81,31 +95,32 @@ const productsPageSchema = z.object({
 export type ProductsPage = z.infer<typeof productsPageSchema>;
 
 export const productKeys = {
-  all: ["products"] as const,
+  publicAll: queryKeys.public.products(),
+  adminAll: queryKeys.admin.products(),
   list: (params: ProductsParams) =>
-    [...productKeys.all, "public", params] as const,
+    queryKeys.public.products("list", params),
   manage: (params: ProductsParams) =>
-    [...productKeys.all, "manage", params] as const,
-  detail: (id: string) => [...productKeys.all, "detail", id] as const,
+    queryKeys.admin.products("list", params),
+  detail: (id: string) => queryKeys.public.products("detail", id),
   manageDetail: (id: string) =>
-    [...productKeys.all, "manage-detail", id] as const,
+    queryKeys.admin.products("detail", id),
 };
 
 export const productsApi = {
-  async getProducts(params: ProductsParams): Promise<ProductsPage> {
-    const { data } = await api.get<unknown>("/products", { params });
+  async getProducts(params: ProductsParams, signal?: AbortSignal): Promise<ProductsPage> {
+    const { data } = await api.get<unknown>("/products", { params, signal });
     return productsPageSchema.parse(data);
   },
-  async getManageProducts(params: ProductsParams): Promise<ProductsPage> {
-    const { data } = await api.get<unknown>("/products/manage", { params });
+  async getManageProducts(params: ProductsParams, signal?: AbortSignal): Promise<ProductsPage> {
+    const { data } = await api.get<unknown>("/products/manage", { params, signal });
     return productsPageSchema.parse(data);
   },
-  async getProductById(id: string): Promise<Product> {
-    const { data } = await api.get<unknown>(`/products/${id}`);
+  async getProductById(id: string, signal?: AbortSignal): Promise<Product> {
+    const { data } = await api.get<unknown>(`/products/${id}`, { signal });
     return productSchema.parse(data);
   },
-  async getManageProductById(id: string): Promise<Product> {
-    const { data } = await api.get<unknown>(`/products/manage/${id}`);
+  async getManageProductById(id: string, signal?: AbortSignal): Promise<Product> {
+    const { data } = await api.get<unknown>(`/products/manage/${id}`, { signal });
     return productSchema.parse(data);
   },
   async createProduct(input: ProductInput): Promise<Product> {

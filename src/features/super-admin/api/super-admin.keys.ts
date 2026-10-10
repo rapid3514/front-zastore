@@ -1,7 +1,8 @@
+import { queryKeys } from '@/shared/query/query-keys'
 import type { GetSuperAdminUsersParams } from './super-admin.api'
 
 export const superAdminKeys = {
-  all: ['super-admin'] as const,
+  all: queryKeys.admin.superAdmin(),
   stats: () => [...superAdminKeys.all, 'dashboard-stats'] as const,
   users: (params: GetSuperAdminUsersParams) => [...superAdminKeys.all, 'users', params] as const,
   admins: () => [...superAdminKeys.all, 'admins'] as const,

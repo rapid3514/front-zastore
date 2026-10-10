@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronRight, Search } from 'lucide-react'
 import { Link, useLocation, useSearchParams } from 'react-router-dom'
 import { GlassCard } from '@/components/glass/GlassCard'
@@ -7,31 +7,41 @@ import { orderStatuses, type OrderStatus } from '@/features/orders/api/orders.ap
 import { useManageOrders } from '@/features/orders/hooks/use-orders'
 import { getOrderStatusClass, orderStatusLabels } from '@/features/orders/lib/order-status'
 import { formatDateTime, formatMoney } from '@/shared/lib/format'
+import { getPageParam, updatePaginatedParam, updatePaginatedSearch } from '@/shared/lib/paginated-search-params'
 
 export function AdminOrdersPage() {
   const { pathname } = useLocation()
   const basePath = pathname.startsWith('/super-admin') ? '/super-admin' : '/admin'
   const [params, setParams] = useSearchParams()
   const [search, setSearch] = useState(params.get('search') ?? '')
-  const [debouncedSearch, setDebouncedSearch] = useState(search)
+  const [debouncedSearch, setDebouncedSearch] = useState(search.trim())
+  const searchChangedByUser = useRef(false)
+  const searchParam = params.get('search') ?? ''
   const status = params.get('status') as OrderStatus | null
   const createdFrom = params.get('createdFrom') ?? ''
   const createdTo = params.get('createdTo') ?? ''
-  const page = Number(params.get('page') ?? '1') || 1
+  const page = getPageParam(params)
 
   useEffect(() => {
+    if (searchChangedByUser.current) return
+    setSearch(searchParam)
+    setDebouncedSearch(searchParam.trim())
+  }, [searchParam])
+
+  useEffect(() => {
+    if (!searchChangedByUser.current) return
+
     const timer = window.setTimeout(() => {
-      setDebouncedSearch(search.trim())
-      setParams((current) => {
-        const next = new URLSearchParams(current)
-        if (search.trim()) next.set('search', search.trim())
-        else next.delete('search')
-        next.delete('page')
-        return next
-      })
+      const nextSearch = search.trim()
+      searchChangedByUser.current = false
+      setDebouncedSearch(nextSearch)
+
+      if (nextSearch === searchParam.trim()) return
+
+      setParams((current) => updatePaginatedSearch(current, 'search', nextSearch))
     }, 350)
     return () => window.clearTimeout(timer)
-  }, [search, setParams])
+  }, [search, searchParam, setParams])
 
   const orders = useManageOrders({
     page,
@@ -44,13 +54,9 @@ export function AdminOrdersPage() {
   const meta = orders.data?.meta
 
   function setStatus(value: string) {
-    setParams((current) => {
-      const next = new URLSearchParams(current)
-      if (value) next.set('status', value)
-      else next.delete('status')
-      next.delete('page')
-      return next
-    })
+    if ((params.get('status') ?? '') === value) return
+
+    setParams((current) => updatePaginatedParam(current, 'status', value))
   }
 
   function setPage(nextPage: number) {
@@ -62,20 +68,16 @@ export function AdminOrdersPage() {
   }
 
   function setDate(name: 'createdFrom' | 'createdTo', value: string) {
-    setParams((current) => {
-      const next = new URLSearchParams(current)
-      if (value) next.set(name, value)
-      else next.delete(name)
-      next.delete('page')
-      return next
-    })
+    if ((params.get(name) ?? '') === value) return
+
+    setParams((current) => updatePaginatedParam(current, name, value))
   }
 
   return (
     <main className="sa-page-container space-y-5">
       <header><p className="sa-eyebrow">Buyurtmalar</p><h1 className="sa-page-title">Mijozlar buyurtmalari</h1><p className="sa-page-description">Buyurtmalarni ko‘ring, tasdiqlang va tayyorlanish holatini yangilang.</p></header>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(16rem,1fr)_14rem_11rem_11rem]">
-        <label className="sa-search flex-1"><Search className="size-4 text-slate-400" /><span className="sr-only">Buyurtma qidirish</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buyurtma yoki mijoz qidirish..." /></label>
+        <label className="sa-search flex-1"><Search className="size-4 text-slate-400" /><span className="sr-only">Buyurtma qidirish</span><input value={search} onChange={(event) => { searchChangedByUser.current = true; setSearch(event.target.value) }} placeholder="Buyurtma yoki mijoz qidirish..." /></label>
         <select className="sa-input sm:max-w-xs" value={status ?? ''} onChange={(event) => setStatus(event.target.value)}><option value="">Barcha holatlar</option>{orderStatuses.map((item) => <option key={item} value={item}>{orderStatusLabels[item]}</option>)}</select>
         <label className="text-xs font-bold text-slate-500">Boshlanish sana<input type="date" className="sa-input mt-1" value={createdFrom} max={createdTo || undefined} onChange={(event) => setDate('createdFrom', event.target.value)} /></label>
         <label className="text-xs font-bold text-slate-500">Tugash sana<input type="date" className="sa-input mt-1" value={createdTo} min={createdFrom || undefined} onChange={(event) => setDate('createdTo', event.target.value)} /></label>

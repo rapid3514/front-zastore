@@ -1,9 +1,10 @@
-import { useState, type FormEvent } from 'react'
+import { useRef, useState, type FormEvent } from 'react'
 import { ArrowLeft, ArrowRight, Loader2, MapPin, Phone, ShoppingBag } from 'lucide-react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/features/auth/model/auth.store'
 import { getCartSubtotal, useCartStore } from '@/features/cart/model/cart.store'
 import { useCreateOrder } from '@/features/orders/hooks/use-orders'
+import { beginCheckoutSubmission, releaseCheckoutSubmission } from '@/features/orders/lib/checkout-submission'
 import { normalizeApiError } from '@/shared/api/api-error'
 import { formatMoney } from '@/shared/lib/format'
 import { OrderSuccessNotice } from './OrderSuccessNotice'
@@ -20,6 +21,7 @@ export function CheckoutPage() {
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
   const [successOrderId, setSuccessOrderId] = useState<string | null>(null)
+  const submittingRef = useRef(false)
   const subtotal = getCartSubtotal(items)
 
   if (!items.length) return <Navigate to="/cart" replace />
@@ -28,10 +30,12 @@ export function CheckoutPage() {
     event.preventDefault()
     if (createOrder.isPending || successOrderId) return
     setError('')
-    if (items.some((item) => !item.isAvailable)) {
+    if (items.some((item) => item.availabilityStatus === 'OUT_OF_STOCK')) {
       setError('Mavjud bo‘lmagan mahsulotlarni savatdan olib tashlang.')
       return
     }
+    if (!beginCheckoutSubmission(submittingRef)) return
+    let succeeded = false
     try {
       const order = await createOrder.mutateAsync({
         items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
@@ -40,9 +44,12 @@ export function CheckoutPage() {
         ...(btcPostBranchNumber.trim() ? { btcPostBranchNumber: btcPostBranchNumber.trim() } : {}),
         ...(note.trim() ? { note: note.trim() } : {}),
       })
+      succeeded = true
       setSuccessOrderId(order.id)
     } catch (cause) {
       setError(normalizeApiError(cause).message)
+    } finally {
+      if (!succeeded) releaseCheckoutSubmission(submittingRef)
     }
   }
 
@@ -64,8 +71,9 @@ export function CheckoutPage() {
       </div>
       <aside className="shop-checkout-summary glass-card">
         <h2>Buyurtmangiz</h2>
-        <div className="space-y-2">{items.map((item) => <p key={item.productId}><span>{item.name} × {item.quantity}</span><strong>{formatMoney(Number(item.price) * item.quantity)}</strong></p>)}</div>
+        <div className="space-y-2">{items.map((item) => <div key={item.productId}><p><span>{item.name} × {item.quantity}</span><strong>{formatMoney(Number(item.price) * item.quantity)}</strong></p>{item.availabilityStatus === 'ARRIVING_IN_14_DAYS' && item.cargoPrice ? <p className="text-xs font-semibold text-amber-700">Kargo: {formatMoney(item.cargoPrice)} / dona</p> : null}</div>)}</div>
         <div className="shop-checkout-total"><span>Jami:</span><strong>{formatMoney(subtotal)}</strong></div>
+        {items.some((item) => item.availabilityStatus === 'ARRIVING_IN_14_DAYS') ? <p className="text-xs font-semibold text-amber-700">Kargo narxi buyurtma jamiga kiritilmagan.</p> : null}
         {error ? <p role="alert" className="text-sm font-semibold text-red-600">{error}</p> : null}
         <button type="submit" disabled={createOrder.isPending} className="shop-primary-button w-full">{createOrder.isPending ? <Loader2 className="size-4 animate-spin" /> : <ShoppingBag className="size-4" />}{createOrder.isPending ? 'Yuborilmoqda...' : <>Tasdiqlash <ArrowRight size={17} /></>}</button>
       </aside>

@@ -1,33 +1,43 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Search, SlidersHorizontal } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useCategories } from '@/features/catalog/hooks/use-categories'
 import { useProducts } from '@/features/catalog/hooks/use-products'
 import { ProductGrid } from '@/features/shop/components/ProductGrid'
+import { getPageParam, updatePaginatedParam, updatePaginatedSearch } from '@/shared/lib/paginated-search-params'
 
 export function CatalogPage() {
   const [params, setParams] = useSearchParams()
   const [search, setSearch] = useState(params.get('search') ?? '')
   const [debouncedSearch, setDebouncedSearch] = useState(search.trim())
+  const searchChangedByUser = useRef(false)
+  const searchParam = params.get('search') ?? ''
   const categoryId = params.get('category') ?? ''
   const sort = params.get('sort') ?? 'new'
-  const page = Math.max(1, Number(params.get('page') ?? '1') || 1)
+  const page = getPageParam(params)
   const categories = useCategories()
 
   useEffect(() => {
+    if (searchChangedByUser.current) return
+    setSearch(searchParam)
+    setDebouncedSearch(searchParam.trim())
+  }, [searchParam])
+
+  useEffect(() => {
+    if (!searchChangedByUser.current) return
+
     const timer = window.setTimeout(() => {
-      setDebouncedSearch(search.trim())
-      setParams((current) => {
-        const next = new URLSearchParams(current)
-        if (search.trim()) next.set('search', search.trim())
-        else next.delete('search')
-        next.delete('page')
-        return next
-      })
+      const nextSearch = search.trim()
+      searchChangedByUser.current = false
+      setDebouncedSearch(nextSearch)
+
+      if (nextSearch === searchParam.trim()) return
+
+      setParams((current) => updatePaginatedSearch(current, 'search', nextSearch))
     }, 400)
     return () => window.clearTimeout(timer)
-  }, [search, setParams])
+  }, [search, searchParam, setParams])
 
   const products = useProducts({
     page,
@@ -44,19 +54,24 @@ export function CatalogPage() {
   }, [products.data?.data, sort])
 
   function updateParam(key: string, value: string) {
-    setParams((current) => {
-      const next = new URLSearchParams(current)
-      if (value) next.set(key, value)
-      else next.delete(key)
-      if (key !== 'page') next.delete('page')
-      return next
-    })
+    if ((params.get(key) ?? '') === value) return
+
+    if (key === 'page') {
+      setParams((current) => {
+        const next = new URLSearchParams(current)
+        next.set('page', value)
+        return next
+      })
+      return
+    }
+
+    setParams((current) => updatePaginatedParam(current, key, value))
   }
 
   return (
     <main className="page-container shop-page space-y-5">
       <header><h1 className="shop-page-title">Katalog</h1></header>
-      <label className="shop-search glass-card"><Search size={20} aria-hidden="true" /><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Mahsulot qidirish..." aria-label="Mahsulot qidirish" /></label>
+      <label className="shop-search glass-card"><Search size={20} aria-hidden="true" /><input type="search" value={search} onChange={(event) => { searchChangedByUser.current = true; setSearch(event.target.value) }} placeholder="Mahsulot qidirish..." aria-label="Mahsulot qidirish" /></label>
 
       {categories.isLoading ? <div className="flex gap-2">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-10 w-24 animate-pulse rounded-full bg-white/50" />)}</div> : null}
       {categories.isError ? <div className="glass-card p-4 text-sm">Kategoriyalar yuklanmadi. <button type="button" className="font-bold underline" onClick={() => void categories.refetch()}>Qayta urinish</button></div> : null}

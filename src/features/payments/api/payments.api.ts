@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { api } from '@/shared/api/api'
+import { queryKeys } from '@/shared/query/query-keys'
 
 export const paymentStatuses = ['PENDING', 'PAID', 'FAILED', 'CANCELLED'] as const
 export type PaymentStatus = typeof paymentStatuses[number]
@@ -56,27 +57,29 @@ export interface PaymentsParams {
 }
 
 export const paymentKeys = {
-  all: ['payments'] as const,
-  order: (orderId: string) => [...paymentKeys.all, 'order', orderId] as const,
-  manage: (params: PaymentsParams) => [...paymentKeys.all, 'manage', params] as const,
-  manageDetail: (id: string) => [...paymentKeys.all, 'manage-detail', id] as const,
+  sessionAll: queryKeys.session.payments(),
+  adminAll: queryKeys.admin.payments(),
+  order: (orderId: string) => queryKeys.session.payments('order', orderId),
+  manageLists: () => queryKeys.admin.payments('list'),
+  manage: (params: PaymentsParams) => queryKeys.admin.payments('list', params),
+  manageDetail: (id: string) => queryKeys.admin.payments('detail', id),
 }
 
 export const paymentsApi = {
-  async getForOrder(orderId: string): Promise<Payment> {
-    const { data } = await api.get<unknown>(`/orders/${orderId}/payment`)
+  async getForOrder(orderId: string, signal?: AbortSignal): Promise<Payment> {
+    const { data } = await api.get<unknown>(`/orders/${orderId}/payment`, { signal })
     return paymentSchema.parse(data)
   },
   async createForOrder(orderId: string): Promise<Payment> {
     const { data } = await api.post<unknown>(`/orders/${orderId}/payment`)
     return paymentSchema.parse(data)
   },
-  async getManage(params: PaymentsParams): Promise<PaymentsPage> {
-    const { data } = await api.get<unknown>('/payments/manage', { params })
+  async getManage(params: PaymentsParams, signal?: AbortSignal): Promise<PaymentsPage> {
+    const { data } = await api.get<unknown>('/payments/manage', { params, signal })
     return paymentsPageSchema.parse(data)
   },
-  async getManageById(id: string): Promise<Payment> {
-    const { data } = await api.get<unknown>(`/payments/manage/${id}`)
+  async getManageById(id: string, signal?: AbortSignal): Promise<Payment> {
+    const { data } = await api.get<unknown>(`/payments/manage/${id}`, { signal })
     return paymentSchema.parse(data)
   },
 }

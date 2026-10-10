@@ -1,7 +1,8 @@
+import { queryKeys } from '@/shared/query/query-keys'
 import type { GetCustomersParams } from './admin.api'
 
 export const adminKeys = {
-  all: ['admin'] as const,
-  stats: () => [...adminKeys.all, 'dashboard-stats'] as const,
-  customers: (params: GetCustomersParams) => [...adminKeys.all, 'customers', params] as const,
+  all: queryKeys.admin.all,
+  stats: () => queryKeys.admin.dashboard('stats'),
+  customers: (params: GetCustomersParams) => queryKeys.admin.users('customers', params),
 }

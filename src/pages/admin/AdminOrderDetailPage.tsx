@@ -31,7 +31,6 @@ export function AdminOrderDetailPage() {
     try {
       await action()
       showToast(success)
-      await order.refetch()
     } catch (error) {
       showToast(normalizeApiError(error).message, 'error')
     } finally {
@@ -51,7 +50,6 @@ export function AdminOrderDetailPage() {
     try {
       await reject.mutateAsync({ id, ...(reason ? { reason } : {}) })
       showToast('Buyurtma rad etildi')
-      await order.refetch()
       setShowReject(false)
       setRejectReason('')
     } catch (error) {
