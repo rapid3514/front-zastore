@@ -11,6 +11,7 @@ import { ProfileSkeleton } from '@/features/profile/components/ProfileSkeleton'
 import { useProfileQuery } from '@/features/profile/hooks/use-profile-query'
 import { normalizeApiError } from '@/shared/api/api-error'
 import { ThemeToggle } from '@/features/profile/components/ThemeToggle'
+import { BotBackgroundCard } from '@/features/appearance/components/BotBackgroundCard'
 
 export function ProfilePage() {
   const { status, error: authError, logout } = useAuth()
@@ -71,6 +72,7 @@ export function ProfilePage() {
         <div className={`space-y-4 ${isAdmin ? '' : 'shop-profile-stack'}`}>
           <ProfileHeaderCard user={profileQuery.data} />
           {isAdmin ? <div className="grid items-start gap-5 md:grid-cols-2"><ProfileInfoCard user={profileQuery.data} /><ProfileSettingsCard /></div> : <><ProfileSettingsCard /><ProfileInfoCard user={profileQuery.data} /></>}
+          {profileQuery.data.role === 'ADMIN' || profileQuery.data.role === 'SUPER_ADMIN' ? <BotBackgroundCard /> : null}
           <Button type="button" variant="outline" disabled={isLoggingOut} onClick={handleLogout} className="profile-logout-button w-full">
             {isLoggingOut ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}Chiqish
           </Button>

@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router-dom'
 import { queryClient } from './query-client'
 import { router } from './router'
 import { AppToastViewport } from '@/shared/ui/toast'
+import { BotAppearanceSync } from '@/features/appearance/components/BotAppearanceSync'
 
 interface AppProvidersProps {
   children?: ReactNode
@@ -12,6 +13,7 @@ interface AppProvidersProps {
 export function AppProviders({ children }: AppProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
+      <BotAppearanceSync />
       {children}
       <RouterProvider router={router} />
       <AppToastViewport />

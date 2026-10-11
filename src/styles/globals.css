@@ -1259,7 +1259,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   --shop-ink: #fff5f7;
   --shop-muted: #d0abb5;
   --shop-panel: rgba(47, 32, 39, .76);
-  --shop-background-art: url('/images/zastore-background-dark.png');
+  --shop-background-art: var(--bot-background-image, url('/images/zastore-background-dark.png'));
   background: radial-gradient(circle at 90% 8%, rgba(134,64,84,.34), transparent 24rem), linear-gradient(155deg, #2b2025, #171316);
 }
 :root[data-theme='dark'] .shop-app::before { opacity: .32; }
@@ -1297,7 +1297,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 }
 
 .admin-layout::before {
-  background: #f5dfe5 url('/images/lumiera-background.jpg') center / cover no-repeat;
+  background: #f5dfe5 var(--bot-background-image, url('/images/lumiera-background.jpg')) center / cover no-repeat;
   filter: saturate(.82);
 }
 
@@ -1391,7 +1391,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .admin-layout .work-hours-switch-active { border-color: #dd4d75; background: #dd4d75; }
 
 .super-admin-executive::before {
-  background: #0a1019 url('/images/zastore-background-dark.png') center / cover no-repeat;
+  background: #0a1019 var(--bot-background-image, url('/images/zastore-background-dark.png')) center / cover no-repeat;
   filter: saturate(.72) contrast(1.06);
 }
 
@@ -1566,7 +1566,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .lumiera-auth-shell::before {
   z-index: -2;
   opacity: 1;
-  background: #fff8fb url('/images/lumiera-background.jpg') center center / cover no-repeat;
+  background: #fff8fb var(--bot-background-image, url('/images/lumiera-background.jpg')) center center / cover no-repeat;
   filter: saturate(.68) brightness(1.16);
   transform: none;
 }
@@ -1590,7 +1590,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
   --shop-accent-strong: var(--lumiera-pink);
   --shop-pink-soft: #fce8f1;
   --shop-panel: var(--lumiera-glass);
-  --shop-background-art: url('/images/lumiera-background.jpg');
+  --shop-background-art: var(--bot-background-image, url('/images/lumiera-background.jpg'));
   background: #fff8fb;
 }
 
@@ -1685,7 +1685,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 
 .shop-success-page::before {
   opacity: .16;
-  background: url('/images/lumiera-background.jpg') center center / cover no-repeat;
+  background: var(--bot-background-image, url('/images/lumiera-background.jpg')) center center / cover no-repeat;
   filter: saturate(.95) brightness(1.03);
 }
 

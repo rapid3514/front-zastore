@@ -40,4 +40,10 @@ npm test
 npm run build
 ```
 
+Admin va super admin profilidagi **Bot orqa foni** bo‘limidan rasm tanlab,
+**Saqlash** tugmasini bosing. Rasm ImageKit orqali yuklanadi, sozlama backendda
+saqlanadi va barcha foydalanuvchilarga qo‘llanadi. **Standart fonga qaytarish**
+avvalgi fonni tiklaydi. Ochiq ilovalar fonni har 60 soniyada yangilaydi.
+Backendda `/api/v1/appearance` endpointi va `BotAppearance` migratsiyasi bo‘lishi kerak.
+
 Real Telegram `initData` olish uchun frontendni public HTTPS URL orqali oching va URL’ni bot Mini App sozlamalariga ulang. Lokal ishga tushirishda API va health so‘rovlari Vite proxy orqali `localhost:3001` backendga yetadi; alohida API tunnel kerak emas. Production hostingda `/api/v1` va `/health` so‘rovlarini backendga yo‘naltiring. Admin va mijoz bo‘limlari Telegram autentifikatsiyasi hamda backend rollari bilan himoyalangan. Fake login yoki auth bypass mavjud emas.

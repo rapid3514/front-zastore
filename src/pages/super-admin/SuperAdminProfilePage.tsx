@@ -2,6 +2,7 @@ import { AtSign, Phone, Send, ShieldCheck } from 'lucide-react'
 import { AdminStatusBadge } from '@/features/super-admin/components/AdminStatusBadge'
 import { ProfileSkeleton, SuperAdminError } from '@/features/super-admin/components/SuperAdminStates'
 import { useAdminProfileQuery } from '@/features/super-admin/hooks/use-admins-query'
+import { BotBackgroundCard } from '@/features/appearance/components/BotBackgroundCard'
 
 export function SuperAdminProfilePage() {
   const profileQuery = useAdminProfileQuery()
@@ -26,6 +27,7 @@ export function SuperAdminProfilePage() {
           </dl>
         </section>
       ) : null}
+      {profile ? <BotBackgroundCard /> : null}
     </div>
   )
 }

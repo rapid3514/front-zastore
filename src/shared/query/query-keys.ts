@@ -19,6 +19,7 @@ export const queryKeys = {
     categories: (...parts: readonly unknown[]) => append(publicRoot, 'categories', parts),
     workHours: (...parts: readonly unknown[]) => append(publicRoot, 'work-hours', parts),
     health: (...parts: readonly unknown[]) => append(publicRoot, 'health', parts),
+    appearance: (...parts: readonly unknown[]) => append(publicRoot, 'appearance', parts),
   },
   session: {
     all: sessionRoot,
