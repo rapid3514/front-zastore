@@ -72,7 +72,7 @@ export function ProfilePage() {
         <div className={`space-y-4 ${isAdmin ? '' : 'shop-profile-stack'}`}>
           <ProfileHeaderCard user={profileQuery.data} />
           {isAdmin ? <div className="grid items-start gap-5 md:grid-cols-2"><ProfileInfoCard user={profileQuery.data} /><ProfileSettingsCard /></div> : <><ProfileSettingsCard /><ProfileInfoCard user={profileQuery.data} /></>}
-          {profileQuery.data.role === 'ADMIN' || profileQuery.data.role === 'SUPER_ADMIN' ? <BotBackgroundCard /> : null}
+          {profileQuery.data.role === 'ADMIN' || profileQuery.data.role === 'SUPER_ADMIN' ? <BotBackgroundCard scope={profileQuery.data.role === 'SUPER_ADMIN' ? 'super-admin' : 'bot'} /> : null}
           <Button type="button" variant="outline" disabled={isLoggingOut} onClick={handleLogout} className="profile-logout-button w-full">
             {isLoggingOut ? <Loader2 className="size-4 animate-spin" /> : <LogOut className="size-4" />}Chiqish
           </Button>

@@ -8,18 +8,22 @@ const appearanceSchema = z.object({
 })
 
 export type BotAppearance = z.infer<typeof appearanceSchema>
+export type AppearanceScope = 'bot' | 'super-admin'
 export interface AppearanceInput {
   background: { fileId: string; url: string } | null
 }
 
-export const appearanceKey = queryKeys.public.appearance()
+export const appearanceKey = (scope: AppearanceScope) => scope === 'super-admin'
+  ? queryKeys.admin.superAdmin('appearance')
+  : queryKeys.public.appearance()
+const appearancePath = (scope: AppearanceScope) => scope === 'super-admin' ? '/appearance/super-admin' : '/appearance'
 export const appearanceApi = {
-  async get(signal?: AbortSignal): Promise<BotAppearance> {
-    const { data } = await api.get<unknown>('/appearance', { signal, timeout: 15_000 })
+  async get(scope: AppearanceScope, signal?: AbortSignal): Promise<BotAppearance> {
+    const { data } = await api.get<unknown>(appearancePath(scope), { signal, timeout: 15_000 })
     return appearanceSchema.parse(data)
   },
-  async update(input: AppearanceInput): Promise<BotAppearance> {
-    const { data } = await api.patch<unknown>('/appearance', input)
+  async update(scope: AppearanceScope, input: AppearanceInput): Promise<BotAppearance> {
+    const { data } = await api.patch<unknown>(appearancePath(scope), input)
     return appearanceSchema.parse(data)
   },
 }

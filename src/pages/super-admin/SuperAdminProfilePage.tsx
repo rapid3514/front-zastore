@@ -27,7 +27,7 @@ export function SuperAdminProfilePage() {
           </dl>
         </section>
       ) : null}
-      {profile ? <BotBackgroundCard /> : null}
+      {profile ? <BotBackgroundCard scope="super-admin" /> : null}
     </div>
   )
 }
