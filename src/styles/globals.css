@@ -1142,6 +1142,47 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .shop-remove { color: var(--shop-accent-strong); }
 
 .shop-checkout-page { max-width: 58rem !important; }
+.shop-checkout-notice {
+  margin-top: 1rem;
+  overflow: hidden;
+  border: 1px solid #e8a0bc;
+  border-radius: 1.25rem;
+  background: linear-gradient(120deg, #fff8fc, #fce8f1);
+  color: #493344;
+  box-shadow: 0 10px 28px rgba(184, 51, 100, .14);
+}
+.shop-checkout-notice h2 {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .85rem 1rem;
+  background: linear-gradient(110deg, #b83364, #ce4774);
+  color: #fff;
+  font-size: clamp(1rem, 3.8vw, 1.2rem);
+  font-weight: 850;
+  line-height: 1.35;
+}
+.shop-checkout-notice h2 > span { flex: none; font-size: 1.5rem; }
+.shop-checkout-notice ul { display: grid; gap: .65rem; padding: 1rem; list-style: none; }
+.shop-checkout-notice li, .shop-checkout-notice-cta {
+  display: flex;
+  align-items: flex-start;
+  gap: .65rem;
+  font-size: .875rem;
+  line-height: 1.5;
+}
+.shop-checkout-notice li > span, .shop-checkout-notice-cta > span { flex: none; font-size: 1.15rem; line-height: 1.3; }
+.shop-checkout-notice li strong { color: #a32959; font-weight: 800; }
+.shop-checkout-notice-cta {
+  border-top: 1px solid #efc5d7;
+  padding: .75rem 1rem;
+  background: rgba(255, 255, 255, .5);
+  color: #a32959;
+}
+.shop-checkout-notice-cta strong { font-weight: 800; }
+:root[data-theme='dark'] .shop-checkout-notice { border-color: #97506e; background: linear-gradient(120deg, #3e2939, #503044); color: #fff1f7; }
+:root[data-theme='dark'] .shop-checkout-notice li strong, :root[data-theme='dark'] .shop-checkout-notice-cta { color: #ffc2df; }
+:root[data-theme='dark'] .shop-checkout-notice-cta { border-top-color: #97506e; background: rgba(255, 255, 255, .04); }
 .shop-field { display: grid; gap: .55rem; color: var(--shop-ink); font-size: .8rem; font-weight: 850; }
 .shop-field > span { display: flex; align-items: center; gap: .45rem; }
 .shop-field input, .shop-field textarea { width: 100%; min-height: 3rem; resize: vertical; border: 1px solid rgba(231,105,139,.12); border-radius: .9rem; outline: none; background: rgba(255,255,255,.6); padding: .75rem .85rem; color: var(--shop-ink); font-size: .9rem; font-weight: 600; }

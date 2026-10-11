@@ -62,6 +62,14 @@ export function CheckoutPage() {
   return <main className="page-container shop-page shop-checkout-page">
     <Link to="/cart" className="shop-back"><ArrowLeft size={17} /> Savatga qaytish</Link>
     <h1 className="shop-page-title mt-2">Buyurtma rasmiylashtirish</h1>
+    <section className="shop-checkout-notice" aria-labelledby="checkout-notice-title">
+      <h2 id="checkout-notice-title"><span aria-hidden="true">💗</span> Ishonchli xarid, xotirjam to‘lov!</h2>
+      <ul>
+        <li><span aria-hidden="true">🛍</span><p>Buyurtmadan so‘ng administratorimiz siz bilan bog‘lanadi.</p></li>
+        <li><span aria-hidden="true">💳</span><p>To‘lov <strong>kelishuvdan keyin</strong> amalga oshiriladi.</p></li>
+      </ul>
+      <p className="shop-checkout-notice-cta"><span aria-hidden="true">✨</span><strong>Yoqtirgan mahsulotingizni hoziroq buyurtma qiling!</strong></p>
+    </section>
     <form onSubmit={submit} className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="glass-card space-y-5 p-4 sm:p-6">
         <label className="shop-field"><span><Phone size={17} /> Telefon raqam</span><input type="tel" maxLength={30} value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+998 90 123 45 67" /></label>
