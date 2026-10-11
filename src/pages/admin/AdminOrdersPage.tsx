@@ -5,6 +5,7 @@ import { GlassCard } from '@/components/glass/GlassCard'
 import { Button } from '@/components/ui/button'
 import { orderStatuses, type OrderStatus } from '@/features/orders/api/orders.api'
 import { useManageOrders } from '@/features/orders/hooks/use-orders'
+import { OrderProductPreview } from '@/features/orders/components/OrderProductPreview'
 import { getOrderStatusClass, orderStatusLabels } from '@/features/orders/lib/order-status'
 import { formatDateTime, formatMoney } from '@/shared/lib/format'
 import { getPageParam, updatePaginatedParam, updatePaginatedSearch } from '@/shared/lib/paginated-search-params'
@@ -89,7 +90,7 @@ export function AdminOrdersPage() {
         {orders.data?.data.map((order) => (
           <Link key={order.id} to={`${basePath}/orders/${order.id}`} className="block no-underline">
             <GlassCard className="sa-glass grid gap-3 rounded-2xl p-4 hover:-translate-y-0.5 sm:grid-cols-2 sm:items-center xl:grid-cols-[1.2fr_1fr_auto_1fr_auto_auto]">
-              <div><p className="font-black text-slate-950">#{order.id}</p><p className="text-sm text-slate-500">{formatDateTime(order.createdAt)}</p></div>
+              <div className="flex min-w-0 items-center gap-3"><OrderProductPreview items={order.items} /><p className="text-sm text-slate-500">{formatDateTime(order.createdAt)}</p></div>
               <div><p className="font-bold text-slate-900">{`${order.customer.firstName} ${order.customer.lastName ?? ''}`.trim()}</p><p className="text-sm text-slate-500">{order.phone ?? 'Telefon yo‘q'}</p></div>
               <span className={`order-status ${getOrderStatusClass(order.status)}`}>{orderStatusLabels[order.status]}</span>
               <div><p className="text-xs font-semibold text-slate-500">Tasdiqlash muddati</p><p className="mt-1 text-sm font-bold text-slate-700">{formatDateTime(order.confirmationDeadline)}</p></div>

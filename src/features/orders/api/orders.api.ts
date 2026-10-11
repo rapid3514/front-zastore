@@ -29,6 +29,7 @@ const orderItemSchema = z.object({
   id: z.string(),
   productId: z.string().nullable(),
   productName: z.string(),
+  imageUrl: z.string().nullable().optional(),
   quantity: z.number(),
   unitPrice: z.string(),
   lineTotal: z.string(),
