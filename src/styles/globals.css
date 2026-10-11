@@ -1893,7 +1893,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .shop-media-thumbnail-active { border-color: var(--shop-accent-strong); }
 
 @media (max-width: 39.999rem) {
-  .shop-detail-actions { display: grid; width: calc(100% - 1.4rem); grid-template-columns: auto minmax(0, 1fr); flex-wrap: nowrap; gap: .55rem; }
+  .shop-detail-actions { position: static; display: grid; width: 100%; margin-top: 1.25rem; grid-template-columns: auto minmax(0, 1fr); flex-wrap: nowrap; gap: .55rem; }
   .shop-detail-actions .shop-primary-button { min-width: 0; padding-inline: .65rem; white-space: nowrap; }
 }
 :root[data-theme='dark'] .media-uploader, :root[data-theme='dark'] .media-preview-card, :root[data-theme='dark'] .media-video-card { border-color: rgba(255, 226, 241, .18); background: rgba(76, 59, 85, .86); }
