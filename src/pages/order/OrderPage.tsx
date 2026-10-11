@@ -32,6 +32,8 @@ export function OrderPage() {
   const createOrder = useCreateOrder()
   const showToast = useToastStore((state) => state.show)
   const [quantity, setQuantity] = useState(1)
+  const [deliveryAddress, setDeliveryAddress] = useState('')
+  const [btcPostBranchNumber, setBtcPostBranchNumber] = useState('')
   const [submitError, setSubmitError] = useState('')
   const submitting = useRef(false)
 
@@ -63,11 +65,17 @@ export function OrderPage() {
   async function submitOrder() {
     if (!canOrder || submitting.current || createOrder.isPending) return
 
-    submitting.current = true
     setSubmitError('')
+    if (!deliveryAddress.trim() || !btcPostBranchNumber.trim()) {
+      setSubmitError('Yetkazib berish manzili va BTC pochta filial raqamini kiriting.')
+      return
+    }
+    submitting.current = true
     try {
       const order = await createOrder.mutateAsync({
         items: [{ productId: product.id, quantity }],
+        deliveryAddress: deliveryAddress.trim(),
+        btcPostBranchNumber: btcPostBranchNumber.trim(),
       })
       showToast('Buyurtma muvaffaqiyatli yaratildi ✅')
       navigate(`/orders/${order.id}`, { replace: true })
@@ -104,7 +112,7 @@ export function OrderPage() {
           {availabilityLabel(product.availabilityStatus)}
         </span>
 
-        <div className="mt-6 space-y-4">
+        <form className="mt-6 space-y-4" onSubmit={(event) => { event.preventDefault(); void submitOrder() }}>
           <div className="flex items-center justify-between gap-4">
             <span className="font-bold">Quantity</span>
             <div className="shop-quantity">
@@ -118,6 +126,15 @@ export function OrderPage() {
             </div>
           </div>
 
+          <label className="shop-field">
+            <span>Yetkazib berish manzili *</span>
+            <input className="shop-input" required maxLength={255} value={deliveryAddress} onChange={(event) => setDeliveryAddress(event.target.value)} disabled={createOrder.isPending} placeholder="Manzilni kiriting" autoComplete="street-address" />
+          </label>
+          <label className="shop-field">
+            <span>BTC pochta filial raqami *</span>
+            <input className="shop-input" required maxLength={50} value={btcPostBranchNumber} onChange={(event) => setBtcPostBranchNumber(event.target.value)} disabled={createOrder.isPending} placeholder="Filial raqamini kiriting" />
+          </label>
+
           <div className="flex items-center justify-between border-t border-[var(--app-border)] pt-4 text-lg">
             <span className="font-bold">Jami:</span>
             <strong>{formatMoney(total)}</strong>
@@ -125,11 +142,11 @@ export function OrderPage() {
 
           {submitError ? <p role="alert" className="text-sm font-semibold text-red-600">{submitError}</p> : null}
 
-          <button type="button" disabled={!canOrder || createOrder.isPending} onClick={() => void submitOrder()} className="shop-primary-button w-full">
+          <button type="submit" disabled={!canOrder || createOrder.isPending} className="shop-primary-button w-full">
             {createOrder.isPending ? <Loader2 className="size-4 animate-spin" /> : <ShoppingCart className="size-4" />}
             {createOrder.isPending ? 'Buyurtma yuborilmoqda...' : 'Zakazni tasdiqlash'}
           </button>
-        </div>
+        </form>
       </section>
     </main>
   )

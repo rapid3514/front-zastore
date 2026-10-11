@@ -48,4 +48,14 @@ fonni tiklaydi; super admin hech qachon umumiy fonga qaytmaydi. Ochiq ilovalar
 fonni har 60 soniyada yangilaydi. Backendda `/api/v1/appearance` va himoyalangan
 `/api/v1/appearance/super-admin` endpointlari hamda fon migratsiyalari kerak.
 
+Har bir admin yoki super admin akkaunti oxirgi 30 kun ichida fonni 5 marta
+o‘zgartirishi mumkin. Standart fonga qaytarish hisoblanadi, muvaffaqiyatsiz
+saqlash yoki bir xil fonni takror saqlash hisoblanmaydi. Profil qolgan limitni
+`/api/v1/appearance/limits` orqali ko‘rsatadi.
+
+Mijoz savatdan yoki to‘g‘ridan-to‘g‘ri mahsulot sahifasidan buyurtma yuborganda
+yetkazib berish manzili va BTC pochta filial raqamini to‘ldirishi kerak.
+Backend ham bu maydonlarsiz yoki faqat bo‘sh joylardan iborat qiymatlar bilan
+buyurtma yaratishni rad etadi.
+
 Real Telegram `initData` olish uchun frontendni public HTTPS URL orqali oching va URL’ni bot Mini App sozlamalariga ulang. Lokal ishga tushirishda API va health so‘rovlari Vite proxy orqali `localhost:3001` backendga yetadi; alohida API tunnel kerak emas. Production hostingda `/api/v1` va `/health` so‘rovlarini backendga yo‘naltiring. Admin va mijoz bo‘limlari Telegram autentifikatsiyasi hamda backend rollari bilan himoyalangan. Fake login yoki auth bypass mavjud emas.

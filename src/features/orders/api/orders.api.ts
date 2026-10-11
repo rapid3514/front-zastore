@@ -8,8 +8,8 @@ export type OrderStatus = typeof orderStatuses[number]
 export interface CreateOrderInput {
   items: Array<{ productId: string; quantity: number }>
   phone?: string
-  deliveryAddress?: string
-  btcPostBranchNumber?: string
+  deliveryAddress: string
+  btcPostBranchNumber: string
   latitude?: number
   longitude?: number
   note?: string

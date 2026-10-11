@@ -30,6 +30,10 @@ export function CheckoutPage() {
     event.preventDefault()
     if (createOrder.isPending || successOrderId) return
     setError('')
+    if (!deliveryAddress.trim() || !btcPostBranchNumber.trim()) {
+      setError('Yetkazib berish manzili va BTC pochta filial raqamini kiriting.')
+      return
+    }
     if (items.some((item) => item.availabilityStatus === 'OUT_OF_STOCK')) {
       setError('Mavjud bo‘lmagan mahsulotlarni savatdan olib tashlang.')
       return
@@ -40,8 +44,8 @@ export function CheckoutPage() {
       const order = await createOrder.mutateAsync({
         items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
         ...(phone.trim() ? { phone: phone.trim() } : {}),
-        ...(deliveryAddress.trim() ? { deliveryAddress: deliveryAddress.trim() } : {}),
-        ...(btcPostBranchNumber.trim() ? { btcPostBranchNumber: btcPostBranchNumber.trim() } : {}),
+        deliveryAddress: deliveryAddress.trim(),
+        btcPostBranchNumber: btcPostBranchNumber.trim(),
         ...(note.trim() ? { note: note.trim() } : {}),
       })
       succeeded = true
@@ -73,8 +77,8 @@ export function CheckoutPage() {
     <form onSubmit={submit} className="mt-5 grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
       <div className="glass-card space-y-5 p-4 sm:p-6">
         <label className="shop-field"><span><Phone size={17} /> Telefon raqam</span><input type="tel" maxLength={30} value={phone} onChange={(event) => setPhone(event.target.value)} placeholder="+998 90 123 45 67" /></label>
-        <label className="shop-field"><span><MapPin size={17} /> Yetkazib berish manzili</span><input maxLength={255} value={deliveryAddress} onChange={(event) => setDeliveryAddress(event.target.value)} placeholder="Manzilni kiriting" /></label>
-        <label className="shop-field"><span><MapPin size={17} /> BTC pochta filial raqami</span><input maxLength={50} value={btcPostBranchNumber} onChange={(event) => setBtcPostBranchNumber(event.target.value)} placeholder="Filial raqamini kiriting" /></label>
+        <label className="shop-field"><span><MapPin size={17} /> Yetkazib berish manzili *</span><input required maxLength={255} value={deliveryAddress} onChange={(event) => setDeliveryAddress(event.target.value)} placeholder="Manzilni kiriting" /></label>
+        <label className="shop-field"><span><MapPin size={17} /> BTC pochta filial raqami *</span><input required maxLength={50} value={btcPostBranchNumber} onChange={(event) => setBtcPostBranchNumber(event.target.value)} placeholder="Filial raqamini kiriting" /></label>
         <label className="shop-field"><span>Izoh (ixtiyoriy)</span><textarea maxLength={500} value={note} onChange={(event) => setNote(event.target.value)} placeholder="Masalan: qo‘ng‘iroq qiling..." /></label>
       </div>
       <aside className="shop-checkout-summary glass-card">
