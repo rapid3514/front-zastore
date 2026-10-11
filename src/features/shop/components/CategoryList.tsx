@@ -24,7 +24,7 @@ export function CategoryList() {
         const Icon = icons[index % icons.length]
         return (
           <Link key={category.id} to={`/catalog?category=${category.id}`} className="shop-category-card">
-            <span className="shop-category-icon"><Icon size={22} strokeWidth={1.7} aria-hidden="true" /></span>
+            <span className="shop-category-icon">{category.imageUrl ? <img src={category.imageUrl} alt="" loading="lazy" decoding="async" /> : <Icon size={22} strokeWidth={1.7} aria-hidden="true" />}</span>
             <span className="truncate font-bold" title={category.name}>{category.name}</span>
           </Link>
         )
