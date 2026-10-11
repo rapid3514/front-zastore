@@ -1,5 +1,5 @@
 import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
-import { ImagePlus, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react'
+import { FileImage, ImagePlus, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCategoryMutations, useManageCategories } from '@/features/catalog/hooks/use-categories'
 import type { Category, CategoryInput } from '@/features/catalog/api/categories.api'
@@ -121,7 +121,7 @@ export function AdminCategoriesPage() {
       {categories.data && visible.length === 0 ? <p className="sa-glass rounded-2xl p-5 text-slate-600">Hozircha kategoriyalar mavjud emas.</p> : null}
       <div className="grid gap-3 md:grid-cols-2">{visible.map((category) => (
         <article key={category.id} className="sa-glass min-w-0 rounded-2xl p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-3"><div className="min-w-0"><h2 className="truncate text-lg font-extrabold text-slate-950" title={category.name}>{category.name}</h2><p className="mt-1 line-clamp-2 text-sm text-slate-500">{category.description || 'Tavsif yo‘q'}</p></div><span className={`shrink-0 rounded-full px-2 py-1 text-xs font-bold ${category.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>{category.isActive ? 'Faol' : 'Nofaol'}</span></div>
+          <div className="flex items-start justify-between gap-3"><div className="flex min-w-0 items-start gap-3">{category.imageUrl ? <img src={category.imageUrl} alt="" loading="lazy" decoding="async" className="size-16 shrink-0 rounded-xl object-cover" /> : <div className="grid size-16 shrink-0 place-items-center rounded-xl bg-rose-50 text-rose-400"><FileImage className="size-6" /></div>}<div className="min-w-0"><h2 className="truncate text-lg font-extrabold text-slate-950" title={category.name}>{category.name}</h2><p className="mt-1 line-clamp-2 text-sm text-slate-500">{category.description || 'Tavsif yo‘q'}</p></div></div><span className={`shrink-0 rounded-full px-2 py-1 text-xs font-bold ${category.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>{category.isActive ? 'Faol' : 'Nofaol'}</span></div>
           <div className="mt-4 flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => setFormCategory(category)}><Pencil className="size-4" />Tahrirlash</Button><Button type="button" variant="outline" disabled={setActive.isPending} onClick={() => void changeActive(category)}>{category.isActive ? 'Nofaol qilish' : 'Faollashtirish'}</Button><Button type="button" variant="outline" onClick={() => setDeleting(category)} className="text-red-600"><Trash2 className="size-4" />O‘chirish</Button></div>
         </article>
       ))}</div>
