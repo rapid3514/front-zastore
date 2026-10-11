@@ -12,7 +12,7 @@ import { ProductMediaUploader } from '@/features/media/components/ProductMediaUp
 import { useProductMedia } from '@/features/media/hooks/use-product-media'
 import { ConfirmDialog } from '@/features/super-admin/components/ConfirmDialog'
 import { ModalShell } from '@/features/super-admin/components/ModalShell'
-import { formatMoney } from '@/shared/lib/format'
+import { formatCargoPrice, formatMoney } from '@/shared/lib/format'
 import { useToastStore } from '@/shared/ui/toast-store'
 
 interface ProductFormProps {
@@ -61,7 +61,7 @@ function ProductFormContent({ product, onClose, categoriesPath }: ProductFormPro
     if (name.trim().length < 2 || name.trim().length > 150) { setError('Nomi 2–150 belgidan iborat bo‘lishi kerak.'); return }
     if (!categoryId) { setError('Kategoriya tanlang.'); return }
     if (!Number.isFinite(amount) || amount < 0.01 || amount > 99999999.99 || Math.round(amount * 100) !== amount * 100) { setError('Narx 0.01 dan 99 999 999.99 gacha bo‘lishi kerak.'); return }
-    if (availabilityStatus === 'ARRIVING_IN_14_DAYS' && (!/^\d+(\.\d{1,2})?$/.test(cargoPrice.trim()) || Number(cargoPrice) < 0.01 || Number(cargoPrice) > 99999999.99)) { setError('14 kunda keladigan mahsulot uchun kargo narxini kiriting (0.01–99 999 999.99).'); return }
+    if (availabilityStatus === 'ARRIVING_IN_14_DAYS' && (!/^\d+(\.\d{1,2})?$/.test(cargoPrice.trim()) || Number(cargoPrice) < 0.01 || Number(cargoPrice) > 99999999.99)) { setError('14 kunda keladigan mahsulot uchun 100 g kargo narxini kiriting (0.01–99 999 999.99).'); return }
     if (isUploading) { setError('Media yuklanmoqda. Yuklash tugagach saqlang.'); return }
     if (hasFailedMedia) { setError('Yuklanmagan media mavjud. Qayta urinib ko‘ring yoki olib tashlang.'); return }
     const input: ProductInput = { name: name.trim(), description: description.trim() || null, price: amount, categoryId, media, availabilityStatus, ...(availabilityStatus === 'ARRIVING_IN_14_DAYS' ? { cargoPrice: Number(cargoPrice) } : {}) }
@@ -86,7 +86,7 @@ function ProductFormContent({ product, onClose, categoriesPath }: ProductFormPro
       {categories.data?.length === 0 ? <p className="text-sm text-slate-600">Avval <Link to={categoriesPath} onClick={() => void closeWithCleanup()} className="font-bold underline">kategoriya yarating</Link>.</p> : null}
       <label className="block text-sm font-bold text-slate-700">Narx *<input required type="number" min={0.01} max={99999999.99} step="0.01" className="sa-input mt-2" value={price} onChange={(event) => setPrice(event.target.value)} /></label>
       <label className="block text-sm font-bold text-slate-700">Sotuv holati *<select required className="sa-input mt-2" value={availabilityStatus} onChange={(event) => { const status = event.target.value as ProductAvailabilityStatus; setAvailabilityStatus(status); if (status !== 'ARRIVING_IN_14_DAYS') setCargoPrice('') }}>{availabilityOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}</select></label>
-      {availabilityStatus === 'ARRIVING_IN_14_DAYS' ? <label className="block text-sm font-bold text-slate-700">Kargo narxi *<input required type="number" min={0.01} max={99999999.99} step="0.01" className="sa-input mt-2" value={cargoPrice} onChange={(event) => setCargoPrice(event.target.value)} placeholder="Kargo narxini kiriting" /><span className="mt-1 block text-xs font-medium text-slate-500">Faqat 14 kunda keladigan mahsulot uchun.</span></label> : null}
+      {availabilityStatus === 'ARRIVING_IN_14_DAYS' ? <label className="block text-sm font-bold text-slate-700">Kargo narxi (100 g uchun) *<input required type="number" min={0.01} max={99999999.99} step="0.01" className="sa-input mt-2" value={cargoPrice} onChange={(event) => setCargoPrice(event.target.value)} placeholder="100 g narxini so‘mda kiriting" /><span className="mt-1 block text-xs font-medium text-slate-500">Faqat 14 kunda keladigan mahsulot uchun. Narx 100 g hisobida kiritiladi.</span></label> : null}
       <label className="block text-sm font-bold text-slate-700">Tavsif<textarea maxLength={2000} className="sa-input mt-2 min-h-24" value={description} onChange={(event) => setDescription(event.target.value)} /></label>
       <ProductMediaUploader controller={mediaController} onError={setError} disabled={pending} />
       {error ? <p role="alert" className="text-sm font-semibold text-red-600">{error}</p> : null}
@@ -134,7 +134,7 @@ export function AdminProductsPage() {
           {cover ? <img src={cover} alt="" loading="lazy" decoding="async" className="size-16 rounded-xl object-cover" /> : <div className="grid size-16 place-items-center rounded-xl bg-white/50 text-slate-400"><Camera className="size-5" /></div>}
           <div className="min-w-0 flex-1">
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0"><h2 className="truncate text-lg font-extrabold text-slate-950">{product.name}</h2><p className="text-sm text-slate-500">{product.category.name} · {formatMoney(product.price)}</p>{product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="text-sm text-amber-700">Kargo: {formatMoney(product.cargoPrice)}</p> : null}</div>
+              <div className="min-w-0"><h2 className="truncate text-lg font-extrabold text-slate-950">{product.name}</h2><p className="text-sm text-slate-500">{product.category.name} · {formatMoney(product.price)}</p>{product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="text-sm text-amber-700">Kargo: {formatCargoPrice(product.cargoPrice)}</p> : null}</div>
               <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-bold ${availabilityBadgeClass(product.availabilityStatus)}`}>{availabilityLabel(product.availabilityStatus)}</span>
             </div>
             <p className="mt-2 flex flex-wrap gap-3 text-xs font-semibold text-slate-500"><span className="inline-flex items-center gap-1"><Camera className="size-3" />{imageCount}</span><span className="inline-flex items-center gap-1"><Video className="size-3" />{videoCount}</span><span>{syncLabel(product.telegramSyncStatus)}</span></p>

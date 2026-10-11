@@ -56,7 +56,7 @@ export function OrderSuccessNotice({ orderId, onDismiss }: OrderSuccessNoticePro
         role="dialog"
         aria-modal="true"
         aria-labelledby="order-success-notice-title"
-        className="relative w-full max-w-md rounded-3xl border border-white/80 bg-white/95 p-6 text-center text-slate-800 shadow-2xl"
+        className="order-success-notice relative w-full max-w-md rounded-3xl border border-white/80 bg-white/95 p-6 text-center text-slate-800 shadow-2xl"
         onClick={(event) => event.stopPropagation()}
       >
         <button

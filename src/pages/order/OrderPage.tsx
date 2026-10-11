@@ -8,7 +8,7 @@ import { getProductCoverImage } from '@/features/catalog/lib/product-media'
 import { useCreateOrder } from '@/features/orders/hooks/use-orders'
 import { ShopImage } from '@/features/shop/components/ShopImage'
 import { normalizeApiError } from '@/shared/api/api-error'
-import { formatMoney } from '@/shared/lib/format'
+import { formatCargoPrice, formatMoney } from '@/shared/lib/format'
 import { useToastStore } from '@/shared/ui/toast-store'
 
 function OrderPageSkeleton() {
@@ -98,7 +98,7 @@ export function OrderPage() {
         <h1>{product.name}</h1>
         <p className="mt-2 text-sm font-semibold">Narxi</p>
         <strong className="shop-detail-price">{formatMoney(product.price)}</strong>
-        {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="mt-2 text-sm font-semibold text-amber-700">Kargo narxi: {formatMoney(product.cargoPrice)} (buyurtma jamiga kirmaydi)</p> : null}
+        {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="mt-2 text-sm font-semibold text-amber-700">Kargo narxi: {formatCargoPrice(product.cargoPrice)} (buyurtma jamiga kirmaydi)</p> : null}
 
         <span className={`shop-availability ${canOrder ? 'shop-availability-open' : ''}`}>
           {availabilityLabel(product.availabilityStatus)}

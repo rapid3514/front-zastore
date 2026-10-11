@@ -4,6 +4,10 @@ export function formatMoney(value: string | number | null | undefined): string {
   return `${new Intl.NumberFormat('uz-UZ').format(amount)} so‘m`
 }
 
+export function formatCargoPrice(value: string | number | null | undefined): string {
+  return `${formatMoney(value)} / 100 g`
+}
+
 export function formatDateTime(value: string | null | undefined): string {
   if (!value) return '—'
   const date = new Date(value)

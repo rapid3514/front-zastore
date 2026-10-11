@@ -5,7 +5,7 @@ import { useManageProducts, useProductMutations } from '@/features/catalog/hooks
 import type { Product } from '@/features/catalog/api/products.api'
 import { availabilityLabel } from '@/features/catalog/lib/product-availability'
 import { catalogError } from '@/features/catalog/lib/catalog-error'
-import { formatMoney } from '@/shared/lib/format'
+import { formatCargoPrice, formatMoney } from '@/shared/lib/format'
 import { useToastStore } from '@/shared/ui/toast-store'
 import { useState } from 'react'
 
@@ -32,7 +32,7 @@ export function AdminTodayPage() {
       {products.data?.data.length === 0 ? <p className="sa-glass rounded-2xl p-5 text-slate-600">Hozircha mahsulotlar mavjud emas. Avval kategoriya va mahsulot yarating.</p> : null}
       <div className="grid gap-3 md:grid-cols-2">{products.data?.data.map((product) => (
         <article key={product.id} className="sa-glass flex min-w-0 items-center justify-between gap-3 rounded-2xl p-4">
-          <div className="min-w-0"><h2 className="truncate font-extrabold text-slate-950">{product.name}</h2><p className="truncate text-sm text-slate-500">{product.category.name} · {formatMoney(product.price)}</p><p className="text-xs font-semibold text-slate-600">{availabilityLabel(product.availabilityStatus)}{product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? ` · Kargo: ${formatMoney(product.cargoPrice)}` : ''}</p></div>
+          <div className="min-w-0"><h2 className="truncate font-extrabold text-slate-950">{product.name}</h2><p className="truncate text-sm text-slate-500">{product.category.name} · {formatMoney(product.price)}</p><p className="text-xs font-semibold text-slate-600">{availabilityLabel(product.availabilityStatus)}{product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? ` · Kargo: ${formatCargoPrice(product.cargoPrice)}` : ''}</p></div>
           {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' ? <Button asChild variant="outline" className="shrink-0"><Link to="/admin/products">Tahrirlash</Link></Button> : <Button type="button" variant={product.availabilityStatus === 'IN_STOCK' ? 'outline' : 'default'} disabled={update.isPending} onClick={() => void toggle(product)} className="shrink-0">{product.availabilityStatus === 'IN_STOCK' ? 'Sotuvda bor' : 'Sotuvda yo‘q'}</Button>}
         </article>
       ))}</div>

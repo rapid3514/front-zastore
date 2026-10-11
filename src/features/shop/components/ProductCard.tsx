@@ -2,7 +2,7 @@ import { Heart, Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import type { Product } from '@/features/catalog/api/products.api'
 import { useCartStore } from '@/features/cart/model/cart.store'
-import { formatMoney } from '@/shared/lib/format'
+import { formatCargoPrice, formatMoney } from '@/shared/lib/format'
 import { getProductCoverImage } from '@/features/catalog/lib/product-media'
 import { availabilityLabel, canOrderProduct } from '@/features/catalog/lib/product-availability'
 import { ShopImage } from './ShopImage'
@@ -25,7 +25,7 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="shop-muted truncate text-xs font-semibold">{product.category.name}</p>
         <Link to={`/product/${product.id}`} className="mt-1 min-h-10 text-sm font-bold leading-5 text-inherit no-underline sm:text-base">{product.name}</Link>
         <p className={`mt-1 text-xs font-bold ${product.availabilityStatus === 'ARRIVING_IN_14_DAYS' ? 'text-amber-700' : 'shop-muted'}`}>{availabilityLabel(product.availabilityStatus)}</p>
-        {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="mt-1 text-xs font-semibold text-amber-700">Kargo: {formatMoney(product.cargoPrice)}</p> : null}
+        {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="mt-1 text-xs font-semibold text-amber-700">Kargo: {formatCargoPrice(product.cargoPrice)}</p> : null}
         <div className="mt-auto flex items-end justify-between gap-1 pt-3">
           <p className="text-sm font-black sm:text-base">{formatMoney(product.price)}</p>
           <button type="button" disabled={!canOrder} onClick={() => addItem(product)} className="shop-add-button" aria-label={`${product.name}ni savatga qo‘shish`}>

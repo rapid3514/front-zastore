@@ -5,7 +5,7 @@ import { useCartStore } from '@/features/cart/model/cart.store'
 import { useProduct } from '@/features/catalog/hooks/use-products'
 import { availabilityLabel, canOrderProduct } from '@/features/catalog/lib/product-availability'
 import { ProductMediaGallery } from '@/features/shop/components/ProductMediaGallery'
-import { formatMoney } from '@/shared/lib/format'
+import { formatCargoPrice, formatMoney } from '@/shared/lib/format'
 
 export function ShopProductDetailsPage() {
   const { id = '' } = useParams()
@@ -34,7 +34,7 @@ export function ShopProductDetailsPage() {
         <span className="shop-sale-pill">{product.category.name}</span>
         <h1>{product.name}</h1>
         <strong className="shop-detail-price">{formatMoney(product.price)}</strong>
-        {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="text-sm font-semibold text-amber-700">Kargo narxi: {formatMoney(product.cargoPrice)} (buyurtma jamiga kirmaydi)</p> : null}
+        {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="text-sm font-semibold text-amber-700">Kargo narxi: {formatCargoPrice(product.cargoPrice)} (buyurtma jamiga kirmaydi)</p> : null}
         <p>{product.description || 'Mahsulot uchun tavsif kiritilmagan.'}</p>
         <span className={`shop-availability ${canOrder ? 'shop-availability-open' : ''}`}>{availabilityLabel(product.availabilityStatus)}</span>
         <div className="shop-detail-actions">

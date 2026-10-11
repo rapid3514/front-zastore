@@ -6,7 +6,7 @@ import { getCartSubtotal, useCartStore } from '@/features/cart/model/cart.store'
 import { useCreateOrder } from '@/features/orders/hooks/use-orders'
 import { beginCheckoutSubmission, releaseCheckoutSubmission } from '@/features/orders/lib/checkout-submission'
 import { normalizeApiError } from '@/shared/api/api-error'
-import { formatMoney } from '@/shared/lib/format'
+import { formatCargoPrice, formatMoney } from '@/shared/lib/format'
 import { OrderSuccessNotice } from './OrderSuccessNotice'
 
 export function CheckoutPage() {
@@ -79,7 +79,7 @@ export function CheckoutPage() {
       </div>
       <aside className="shop-checkout-summary glass-card">
         <h2>Buyurtmangiz</h2>
-        <div className="space-y-2">{items.map((item) => <div key={item.productId}><p><span>{item.name} × {item.quantity}</span><strong>{formatMoney(Number(item.price) * item.quantity)}</strong></p>{item.availabilityStatus === 'ARRIVING_IN_14_DAYS' && item.cargoPrice ? <p className="text-xs font-semibold text-amber-700">Kargo: {formatMoney(item.cargoPrice)} / dona</p> : null}</div>)}</div>
+        <div className="space-y-2">{items.map((item) => <div key={item.productId}><p><span>{item.name} × {item.quantity}</span><strong>{formatMoney(Number(item.price) * item.quantity)}</strong></p>{item.availabilityStatus === 'ARRIVING_IN_14_DAYS' && item.cargoPrice ? <p className="text-xs font-semibold text-amber-700">Kargo: {formatCargoPrice(item.cargoPrice)}</p> : null}</div>)}</div>
         <div className="shop-checkout-total"><span>Jami:</span><strong>{formatMoney(subtotal)}</strong></div>
         {items.some((item) => item.availabilityStatus === 'ARRIVING_IN_14_DAYS') ? <p className="text-xs font-semibold text-amber-700">Kargo narxi buyurtma jamiga kiritilmagan.</p> : null}
         {error ? <p role="alert" className="text-sm font-semibold text-red-600">{error}</p> : null}
