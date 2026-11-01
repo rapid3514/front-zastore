@@ -82,18 +82,20 @@ export function ShopProductDetailsPage() {
           className="mt-5 border-t border-[var(--app-border)] pt-4"
         />
 
-        <div className="shop-detail-actions mt-5 flex flex-wrap gap-2.5">
+        <div className="shop-detail-actions mt-5">
           <div className="shop-quantity">
             <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="Miqdorni kamaytirish"><Minus size={16} /></button>
             <span className="px-2 font-bold">{quantity}</span>
             <button type="button" onClick={() => setQuantity(quantity + 1)} aria-label="Miqdorni oshirish"><Plus size={16} /></button>
           </div>
-          <button type="button" disabled={!canOrder} onClick={addToCart} className="shop-primary-button flex-1 min-w-[10rem]">
-            <ShoppingBag size={17} /> Savatga qo‘shish
+          <button type="button" disabled={!canOrder} onClick={addToCart} className="shop-primary-button shop-detail-cart-btn">
+            <ShoppingBag size={17} className="shrink-0" />
+            <span>Savatga qo‘shish</span>
           </button>
           {canOrder ? (
-            <button type="button" onClick={handleDirectBuy} className="shop-secondary-button flex items-center justify-center gap-1.5 px-4 font-bold">
-              <Zap size={16} className="text-amber-500 fill-amber-500" /> Hozir xarid qilish
+            <button type="button" onClick={handleDirectBuy} className="shop-secondary-button shop-detail-buy-btn">
+              <Zap size={16} className="shrink-0 text-amber-500 fill-amber-500" />
+              <span>Hozir xarid qilish</span>
             </button>
           ) : null}
         </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check, Edit3 } from 'lucide-react'
+import { Edit3, Ruler } from 'lucide-react'
 import { telegramHaptic } from '@/shared/telegram/telegram'
 
 export const DEFAULT_SIZES = ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'] as const
@@ -17,7 +17,7 @@ export function SizeSelector({
   label = 'O‘lcham (Razmer)',
   className = '',
 }: SizeSelectorProps) {
-  const isPreset = DEFAULT_SIZES.includes(value as typeof DEFAULT_SIZES[number])
+  const isPreset = DEFAULT_SIZES.includes(value as (typeof DEFAULT_SIZES)[number])
   const [isCustom, setIsCustom] = useState(!isPreset && Boolean(value))
 
   function handleSelectPreset(size: string) {
@@ -27,39 +27,48 @@ export function SizeSelector({
   }
 
   function handleToggleCustom() {
-    setIsCustom(true)
-    if (isPreset) onChange('')
+    setIsCustom((prev) => {
+      const next = !prev
+      if (next && isPreset) onChange('')
+      if (!next && !value) onChange('M')
+      return next
+    })
     telegramHaptic('light')
   }
 
   return (
-    <div className={`space-y-2.5 ${className}`}>
-      <div className="flex items-center justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
-        <span className="flex items-center gap-1.5">
+    <div className={`shop-size-selector ${className}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+          <Ruler className="size-3.5 text-[var(--shop-accent-strong)]" />
           <span>{label}:</span>
           {value ? (
-            <span className="rounded-md bg-pink-100 px-2 py-0.5 text-xs font-extrabold text-pink-700 dark:bg-pink-900/50 dark:text-pink-300">
+            <span className="inline-flex items-center rounded-md bg-pink-100 px-2 py-0.5 text-xs font-black text-pink-700 dark:bg-pink-900/50 dark:text-pink-200">
               {value}
             </span>
           ) : (
-            <span className="text-slate-400 font-normal">tanlanmagan</span>
+            <span className="font-normal text-slate-400">tanlanmagan</span>
           )}
-        </span>
+        </div>
         <button
           type="button"
           onClick={handleToggleCustom}
-          className={`flex items-center gap-1 text-[11px] font-semibold transition-colors ${
+          className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold transition-colors ${
             isCustom
-              ? 'text-pink-600 dark:text-pink-400 underline'
-              : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-200'
+              ? 'bg-pink-100/80 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300'
+              : 'text-slate-500 hover:bg-white/50 hover:text-slate-800 dark:text-slate-300 dark:hover:bg-white/10'
           }`}
         >
           <Edit3 className="size-3" />
-          {isCustom ? 'Boshqa razmer' : 'Boshqa kiritish'}
+          {isCustom ? 'Standart o‘lchamlar' : 'Boshqa kiritish'}
         </button>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={label}>
+      <div
+        className="mt-2.5 grid grid-cols-7 gap-1.5 sm:gap-2"
+        role="radiogroup"
+        aria-label={label}
+      >
         {DEFAULT_SIZES.map((size) => {
           const selected = !isCustom && value === size
           return (
@@ -69,13 +78,8 @@ export function SizeSelector({
               role="radio"
               aria-checked={selected}
               onClick={() => handleSelectPreset(size)}
-              className={`relative flex min-w-[2.75rem] items-center justify-center rounded-xl px-3 py-2 text-xs font-black transition-all ${
-                selected
-                  ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md shadow-pink-500/25 scale-[1.03] ring-2 ring-pink-400/50'
-                  : 'border border-[var(--app-border)] bg-white/60 text-slate-700 hover:border-pink-300 hover:bg-white dark:bg-slate-800/60 dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
+              className={`shop-size-pill ${selected ? 'shop-size-pill-active' : ''}`}
             >
-              {selected ? <Check className="mr-1 size-3 stroke-[3]" /> : null}
               {size}
             </button>
           )
@@ -83,13 +87,13 @@ export function SizeSelector({
       </div>
 
       {isCustom ? (
-        <div className="mt-2">
+        <div className="shop-field mt-2.5">
           <input
             type="text"
             maxLength={30}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Razmerni yozing (masalan: 38, 42 yoki Standard)..."
+            placeholder="Razmerni yozing (masalan: 38, 42 yoki Standart)..."
             className="shop-input text-xs"
             autoFocus
           />
