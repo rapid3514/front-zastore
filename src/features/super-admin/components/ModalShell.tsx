@@ -16,23 +16,30 @@ export function ModalShell({ open, title, description, children, onOpenChange }:
   const location = useLocation()
   const isAdminPanel = location.pathname.startsWith('/admin')
   const dialogRef = useRef<HTMLDivElement>(null)
+  const onOpenChangeRef = useRef(onOpenChange)
+
+  useEffect(() => {
+    onOpenChangeRef.current = onOpenChange
+  }, [onOpenChange])
 
   useEffect(() => {
     if (!open) return
     const originalOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
 
-    // Focus first element on open
+    // Focus first element on open only if nothing inside dialog is already focused
     const frame = window.requestAnimationFrame(() => {
-      const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(
-        'input:not([disabled]), button:not([disabled]), select:not([disabled]), textarea:not([disabled])',
-      )
-      firstFocusable?.focus()
+      if (dialogRef.current && !dialogRef.current.contains(document.activeElement)) {
+        const firstFocusable = dialogRef.current.querySelector<HTMLElement>(
+          'input:not([disabled]), button:not([disabled]), select:not([disabled]), textarea:not([disabled])',
+        )
+        firstFocusable?.focus()
+      }
     })
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        onOpenChange(false)
+        onOpenChangeRef.current(false)
         return
       }
 
@@ -60,7 +67,7 @@ export function ModalShell({ open, title, description, children, onOpenChange }:
       document.body.style.overflow = originalOverflow
       document.removeEventListener('keydown', onKeyDown)
     }
-  }, [open, onOpenChange])
+  }, [open])
 
   if (!open) return null
 
@@ -70,7 +77,7 @@ export function ModalShell({ open, title, description, children, onOpenChange }:
         'fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/45 p-0 backdrop-blur-sm sm:items-center sm:p-5',
         isAdminPanel && 'admin-modal-surface',
       )}
-      onClick={() => onOpenChange(false)}
+      onClick={() => onOpenChangeRef.current(false)}
     >
       <div
         ref={dialogRef}
@@ -91,7 +98,7 @@ export function ModalShell({ open, title, description, children, onOpenChange }:
           </div>
           <button
             type="button"
-            onClick={() => onOpenChange(false)}
+            onClick={() => onOpenChangeRef.current(false)}
             className="sa-icon-button"
             aria-label="Oynani yopish"
           >

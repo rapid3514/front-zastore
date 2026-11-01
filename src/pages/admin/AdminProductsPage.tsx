@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Camera, Loader2, Pencil, Plus, RefreshCw, Search, Send, Trash2, Video } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -39,21 +39,23 @@ function ProductFormContent({ product, onClose, categoriesPath }: ProductFormPro
   const categories = useManageCategories()
   const { create, update } = useProductMutations()
   const showToast = useToastStore((state) => state.show)
-  const initialMedia = product?.media.length
-    ? product.media
-    : product?.imageFileId && product.imageUrl
-      ? [{ type: 'IMAGE' as const, fileId: product.imageFileId, url: product.imageUrl, position: 0 }]
-      : []
+  const initialMedia = useMemo(() => {
+    return product?.media.length
+      ? product.media
+      : product?.imageFileId && product.imageUrl
+        ? [{ type: 'IMAGE' as const, fileId: product.imageFileId, url: product.imageUrl, position: 0 }]
+        : []
+  }, [product?.id, product?.imageFileId, product?.imageUrl, product?.media])
   const mediaController = useProductMedia(initialMedia, () => showToast('Yuklangan media o‘chirilmadi, keyinroq qayta urinib ko‘ring.', 'error'))
   const pending = create.isPending || update.isPending
   const isUploading = mediaController.media.some((item) => item.status === 'queued' || item.status === 'uploading')
   const hasFailedMedia = mediaController.media.some((item) => item.status === 'failed')
   const media = useMemo<ProductMediaInput[]>(() => mediaController.media.flatMap((item) => item.status === 'ready' && item.fileId && item.url ? [{ type: item.type, fileId: item.fileId, url: item.url, position: item.position }] : []), [mediaController.media])
 
-  async function closeWithCleanup() {
+  const closeWithCleanup = useCallback(async () => {
     await mediaController.cleanupUnassigned()
     onClose()
-  }
+  }, [mediaController, onClose])
 
   async function submit(event: FormEvent) {
     event.preventDefault()

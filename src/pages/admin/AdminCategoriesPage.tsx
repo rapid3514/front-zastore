@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent, type FormEvent } from 'react'
+import { useCallback, useRef, useState, type ChangeEvent, type FormEvent } from 'react'
 import { FileImage, ImagePlus, Loader2, Pencil, Plus, Search, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useCategoryMutations, useManageCategories } from '@/features/catalog/hooks/use-categories'
@@ -80,10 +80,10 @@ function CategoryForm({ category, onClose }: { category: Category | null; onClos
   const isUploading = image?.status === 'queued' || image?.status === 'uploading'
   const hasFailedImage = image?.status === 'failed'
 
-  async function closeWithCleanup() {
+  const closeWithCleanup = useCallback(async () => {
     await mediaController.cleanupUnassigned()
     onClose()
-  }
+  }, [mediaController, onClose])
 
   async function submit(event: FormEvent) {
     event.preventDefault()
