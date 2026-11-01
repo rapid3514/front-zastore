@@ -46,6 +46,8 @@ export interface TelegramWebApp {
   ready(): void
   expand(): void
   close(): void
+  openLink?(url: string, options?: { try_instant_view?: boolean }): void
+  openTelegramLink?(url: string): void
   requestContact?(callback: (granted: boolean) => void): void
   onEvent(eventType: 'themeChanged' | 'backButtonClicked' | 'mainButtonClicked', eventHandler: () => void): void
   offEvent(eventType: 'themeChanged' | 'backButtonClicked' | 'mainButtonClicked', eventHandler: () => void): void

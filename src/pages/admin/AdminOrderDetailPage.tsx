@@ -20,28 +20,14 @@ import {
 import { Link, useLocation, useParams } from 'react-router-dom'
 import { GlassCard } from '@/components/glass/GlassCard'
 import { Button } from '@/components/ui/button'
-import type { Order, OrderStatus } from '@/features/orders/api/orders.api'
+import { ordersApi, type OrderStatus } from '@/features/orders/api/orders.api'
 import { useManageOrder, useOrderAdminMutations } from '@/features/orders/hooks/use-orders'
 import { getNextAdminStatuses, getOrderStatusClass, orderStatusLabels } from '@/features/orders/lib/order-status'
 import { ConfirmDialog } from '@/features/super-admin/components/ConfirmDialog'
 import { normalizeApiError } from '@/shared/api/api-error'
 import { formatDateTime, formatMoney } from '@/shared/lib/format'
+import { openTelegramChat, telegramHaptic } from '@/shared/telegram/telegram'
 import { useToastStore } from '@/shared/ui/toast-store'
-
-function getCustomerChatHref(customer: Order['customer'], orderPhone: string | null): string | null {
-  const cleanUsername = customer.username?.trim().replace(/^@/, '')
-  if (cleanUsername) {
-    return `https://t.me/${cleanUsername}`
-  }
-  if (customer.telegramId) {
-    return `tg://user?id=${customer.telegramId}`
-  }
-  const phoneDigits = (orderPhone ?? customer.phone ?? '').replace(/\D/g, '')
-  if (phoneDigits) {
-    return `https://t.me/+${phoneDigits}`
-  }
-  return null
-}
 
 function getAdminProgressStep(status: OrderStatus) {
   switch (status) {
@@ -103,8 +89,36 @@ export function AdminOrderDetailPage() {
   const customerFullName = `${item.customer.firstName} ${item.customer.lastName ?? ''}`.trim() || 'Mijoz'
   const customerInitial = customerFullName.charAt(0).toLocaleUpperCase('uz')
   const phoneToUse = item.phone ?? item.customer.phone ?? null
-  const chatHref = getCustomerChatHref(item.customer, phoneToUse)
+  const canOpenChat = Boolean(
+    item.customer.username?.trim() ||
+    item.customer.phone?.trim() ||
+    item.phone?.trim() ||
+    item.customer.telegramId,
+  )
   const progress = getAdminProgressStep(item.status)
+
+  function handleOpenCustomerChat() {
+    telegramHaptic('light')
+    const openedVia = openTelegramChat({
+      username: item.customer.username,
+      telegramPhone: item.customer.phone,
+      orderPhone: item.phone,
+      telegramId: item.customer.telegramId,
+    })
+
+    if (!item.customer.username) {
+      void ordersApi
+        .openCustomerChat(item.id)
+        .then((res) => {
+          if (res?.username && openedVia !== 'username') {
+            openTelegramChat({ username: res.username })
+          }
+        })
+        .catch(() => {
+          // Non-blocking fallback
+        })
+    }
+  }
 
   async function runAction(action: () => Promise<unknown>, success: string) {
     try {
@@ -258,16 +272,15 @@ export function AdminOrderDetailPage() {
             </div>
 
             {/* Telefon raqam pastida: Chat orqali muloqot tugmasi */}
-            {chatHref ? (
-              <a
-                href={chatHref}
-                target={chatHref.startsWith('http') ? '_blank' : undefined}
-                rel={chatHref.startsWith('http') ? 'noopener noreferrer' : undefined}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-pink-200/80 bg-pink-50/80 px-4 py-2.5 text-xs font-extrabold text-pink-700 transition hover:bg-pink-100/90 dark:border-pink-800/50 dark:bg-pink-950/50 dark:text-pink-200 dark:hover:bg-pink-900/60 no-underline"
+            {canOpenChat ? (
+              <button
+                type="button"
+                onClick={handleOpenCustomerChat}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-pink-200/80 bg-pink-50/80 px-4 py-2.5 text-xs font-extrabold text-pink-700 transition hover:bg-pink-100/90 dark:border-pink-800/50 dark:bg-pink-950/50 dark:text-pink-200 dark:hover:bg-pink-900/60"
               >
                 <MessageCircle className="size-4" />
                 Chat orqali muloqot
-              </a>
+              </button>
             ) : null}
           </div>
 

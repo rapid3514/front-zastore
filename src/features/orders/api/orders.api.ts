@@ -136,6 +136,15 @@ export const ordersApi = {
     const { data } = await api.get<unknown>(`/orders/manage/${id}`, { signal })
     return orderSchema.parse(data)
   },
+  async openCustomerChat(id: string) {
+    const { data } = await api.post<{
+      username?: string | null
+      telegramId?: string | null
+      phone?: string | null
+      telegramUrl?: string | null
+    }>(`/orders/${id}/customer-chat`)
+    return data
+  },
   async manageSummary(signal?: AbortSignal) {
     const { data } = await api.get<unknown>('/orders/manage/summary', { signal })
     return orderManagementSummarySchema.parse(data)

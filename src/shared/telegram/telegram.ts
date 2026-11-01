@@ -15,6 +15,58 @@ export function isTelegramEnvironment(): boolean {
   return Boolean(getTelegramWebApp())
 }
 
+export function openTelegramChat(options: {
+  username?: string | null
+  telegramPhone?: string | null
+  orderPhone?: string | null
+  telegramId?: string | null
+}): 'username' | 'phone' | 'id' | null {
+  const webApp = getTelegramWebApp()
+  const cleanUsername = options.username?.trim().replace(/^@/, '')
+  const telegramPhoneDigits = (options.telegramPhone ?? '').replace(/\D/g, '')
+  const orderPhoneDigits = (options.orderPhone ?? '').replace(/\D/g, '')
+  const phoneDigits = telegramPhoneDigits || orderPhoneDigits
+
+  if (cleanUsername) {
+    const url = `https://t.me/${cleanUsername}`
+    try {
+      if (webApp?.openTelegramLink) {
+        webApp.openTelegramLink(url)
+        return 'username'
+      }
+    } catch {
+      // Fallback below
+    }
+    window.open(url, '_blank', 'noopener,noreferrer')
+    return 'username'
+  }
+
+  if (phoneDigits) {
+    const url = `https://t.me/+${phoneDigits}`
+    try {
+      if (webApp?.openTelegramLink) {
+        webApp.openTelegramLink(url)
+        return 'phone'
+      }
+    } catch {
+      // Fallback below
+    }
+    if (options.telegramId) {
+      window.location.href = `tg://user?id=${options.telegramId}`
+      return 'id'
+    }
+    window.open(url, '_blank', 'noopener,noreferrer')
+    return 'phone'
+  }
+
+  if (options.telegramId) {
+    window.location.href = `tg://user?id=${options.telegramId}`
+    return 'id'
+  }
+
+  return null
+}
+
 export function requestTelegramContact(): Promise<boolean | null> {
   const webApp = getTelegramWebApp()
   if (!webApp?.requestContact) return Promise.resolve(null)
