@@ -6,7 +6,7 @@ export const orderStatuses = ['PENDING_CONFIRMATION', 'CONFIRMED', 'PROCESSING',
 export type OrderStatus = typeof orderStatuses[number]
 
 export interface CreateOrderInput {
-  items: Array<{ productId: string; quantity: number }>
+  items: Array<{ productId: string; quantity: number; size?: string }>
   phone?: string
   deliveryAddress: string
   btcPostBranchNumber: string

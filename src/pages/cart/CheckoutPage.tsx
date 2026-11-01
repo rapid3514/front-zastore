@@ -43,7 +43,11 @@ export function CheckoutPage() {
     let succeeded = false
     try {
       const order = await createOrder.mutateAsync({
-        items: items.map((item) => ({ productId: item.productId, quantity: item.quantity })),
+        items: items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+          size: item.size?.trim() || undefined,
+        })),
         ...(phone.trim() ? { phone: phone.trim() } : {}),
         deliveryAddress: deliveryAddress.trim(),
         btcPostBranchNumber: btcPostBranchNumber.trim(),
@@ -104,8 +108,14 @@ export function CheckoutPage() {
           <h2>Buyurtmangiz</h2>
           <div className="space-y-2">
             {items.map((item) => (
-              <div key={item.productId}>
-                <p><span>{item.name} × {item.quantity}</span><strong>{formatMoney(Number(item.price) * item.quantity)}</strong></p>
+              <div key={`${item.productId}::${item.size || ''}`}>
+                <p>
+                  <span>
+                    {item.name}
+                    {item.size ? ` (${item.size})` : ''} × {item.quantity}
+                  </span>
+                  <strong>{formatMoney(Number(item.price) * item.quantity)}</strong>
+                </p>
                 {item.availabilityStatus === 'ARRIVING_IN_14_DAYS' && item.cargoPrice ? (
                   <p className="text-xs font-semibold text-amber-700 dark:text-amber-400">Kargo: {formatCargoPrice(item.cargoPrice)}</p>
                 ) : null}

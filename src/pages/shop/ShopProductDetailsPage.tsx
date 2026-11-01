@@ -6,6 +6,7 @@ import { useProduct } from '@/features/catalog/hooks/use-products'
 import { availabilityLabel, canOrderProduct } from '@/features/catalog/lib/product-availability'
 import { useWishlistStore } from '@/features/catalog/model/wishlist.store'
 import { ProductMediaGallery } from '@/features/shop/components/ProductMediaGallery'
+import { SizeSelector } from '@/features/shop/components/SizeSelector'
 import { formatCargoPrice, formatMoney } from '@/shared/lib/format'
 import { telegramHaptic } from '@/shared/telegram/telegram'
 import { useToastStore } from '@/shared/ui/toast-store'
@@ -14,6 +15,7 @@ export function ShopProductDetailsPage() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const [quantity, setQuantity] = useState(1)
+  const [size, setSize] = useState('M')
   const addItem = useCartStore((state) => state.addItem)
   const isFavorite = useWishlistStore((state) => state.isFavorite(id))
   const toggleFavorite = useWishlistStore((state) => state.toggleFavorite)
@@ -27,9 +29,10 @@ export function ShopProductDetailsPage() {
   const canOrder = canOrderProduct(product)
 
   function addToCart() {
-    addItem(product, quantity)
+    addItem(product, quantity, size)
     telegramHaptic('medium')
-    showToast(`${quantity} ta “${product.name}” savatga qo‘shildi ✅`)
+    const sizeSuffix = size ? ` (${size})` : ''
+    showToast(`${quantity} ta “${product.name}${sizeSuffix}” savatga qo‘shildi ✅`)
   }
 
   function handleToggleFavorite() {
@@ -40,7 +43,8 @@ export function ShopProductDetailsPage() {
 
   function handleDirectBuy() {
     telegramHaptic('medium')
-    navigate(`/order/${product.id}`)
+    const queryParam = size ? `?size=${encodeURIComponent(size)}` : ''
+    navigate(`/order/${product.id}${queryParam}`)
   }
 
   return (
@@ -70,7 +74,15 @@ export function ShopProductDetailsPage() {
         <span className={`shop-availability mt-3 inline-block ${canOrder ? 'shop-availability-open' : ''}`}>
           {availabilityLabel(product.availabilityStatus)}
         </span>
-        <div className="shop-detail-actions mt-6 flex flex-wrap gap-2.5">
+
+        {/* Razmer tanlash */}
+        <SizeSelector
+          value={size}
+          onChange={setSize}
+          className="mt-5 border-t border-[var(--app-border)] pt-4"
+        />
+
+        <div className="shop-detail-actions mt-5 flex flex-wrap gap-2.5">
           <div className="shop-quantity">
             <button type="button" onClick={() => setQuantity(Math.max(1, quantity - 1))} aria-label="Miqdorni kamaytirish"><Minus size={16} /></button>
             <span className="px-2 font-bold">{quantity}</span>

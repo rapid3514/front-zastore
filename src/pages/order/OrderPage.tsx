@@ -1,12 +1,13 @@
 import { useRef, useState } from 'react'
 import { ArrowLeft, Loader2, Minus, Plus, ShoppingCart } from 'lucide-react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useProduct } from '@/features/catalog/hooks/use-products'
 import { availabilityLabel, canOrderProduct } from '@/features/catalog/lib/product-availability'
 import { getProductCoverImage } from '@/features/catalog/lib/product-media'
 import { useCreateOrder } from '@/features/orders/hooks/use-orders'
 import { ShopImage } from '@/features/shop/components/ShopImage'
+import { SizeSelector } from '@/features/shop/components/SizeSelector'
 import { normalizeApiError } from '@/shared/api/api-error'
 import { formatCargoPrice, formatMoney } from '@/shared/lib/format'
 import { telegramHaptic } from '@/shared/telegram/telegram'
@@ -28,11 +29,13 @@ function OrderPageSkeleton() {
 
 export function OrderPage() {
   const { productId = '' } = useParams()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const productQuery = useProduct(productId)
   const createOrder = useCreateOrder()
   const showToast = useToastStore((state) => state.show)
   const [quantity, setQuantity] = useState(1)
+  const [size, setSize] = useState(searchParams.get('size') ?? 'M')
   const [deliveryAddress, setDeliveryAddress] = useState('')
   const [btcPostBranchNumber, setBtcPostBranchNumber] = useState('')
   const [submitError, setSubmitError] = useState('')
@@ -74,7 +77,7 @@ export function OrderPage() {
     submitting.current = true
     try {
       const order = await createOrder.mutateAsync({
-        items: [{ productId: product.id, quantity }],
+        items: [{ productId: product.id, quantity, size: size.trim() || undefined }],
         deliveryAddress: deliveryAddress.trim(),
         btcPostBranchNumber: btcPostBranchNumber.trim(),
       })
@@ -120,6 +123,12 @@ export function OrderPage() {
         </span>
 
         <form className="mt-6 space-y-4" onSubmit={(event) => { event.preventDefault(); void submitOrder() }}>
+          <SizeSelector
+            value={size}
+            onChange={setSize}
+            className="rounded-2xl border border-[var(--app-border)] bg-white/40 p-4 dark:bg-slate-900/40"
+          />
+
           <div className="flex items-center justify-between gap-4">
             <span className="font-bold text-slate-800 dark:text-slate-200">Miqdor</span>
             <div className="shop-quantity">

@@ -1,11 +1,21 @@
 import { useState } from 'react'
-import { ArrowLeft, Loader2, MapPin, Package, Phone, RotateCcw } from 'lucide-react'
+import {
+  AlertCircle,
+  ArrowLeft,
+  Building2,
+  Loader2,
+  MapPin,
+  MessageSquare,
+  Package,
+  Phone,
+  RotateCcw,
+  Truck,
+} from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { useCancelOrder, useMyOrder } from '@/features/orders/hooks/use-orders'
 import { ConfirmationDeadline } from '@/features/orders/components/ConfirmationDeadline'
 import { OrderStatusCard } from '@/features/orders/components/OrderStatusCard'
-import { OrderPaymentCard } from '@/features/payments/components/OrderPaymentCard'
 import { ConfirmDialog } from '@/features/super-admin/components/ConfirmDialog'
 import { normalizeApiError } from '@/shared/api/api-error'
 import { formatMoney } from '@/shared/lib/format'
@@ -86,43 +96,101 @@ export function ShopOrderDetailPage() {
           </section>
 
           {/* Yetkazib berish ma'lumotlari */}
-          <section className="glass-card space-y-3 rounded-3xl p-5">
-            <h2 className="text-base font-black sm:text-lg">Yetkazib berish</h2>
-            {order.data.phone ? (
-              <p className="flex items-start gap-2 text-sm">
-                <Phone className="mt-0.5 size-4 shrink-0 text-slate-400" />
-                <a href={`tel:${order.data.phone}`} className="font-semibold text-indigo-600 underline dark:text-indigo-400">
-                  {order.data.phone}
-                </a>
-              </p>
-            ) : (
-              <p className="flex items-start gap-2 text-sm text-slate-500">
-                <Phone className="mt-0.5 size-4 shrink-0" /> Telefon ko‘rsatilmagan
-              </p>
-            )}
-            <p className="flex items-start gap-2 text-sm">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-slate-400" />
-              <span>{order.data.deliveryAddress ?? 'Manzil ko‘rsatilmagan'}</span>
-            </p>
-            {order.data.btcPostBranchNumber ? (
-              <p className="flex items-start gap-2 text-sm font-medium">
-                <span className="inline-block rounded-md bg-pink-100 px-1.5 py-0.5 text-xs font-bold text-pink-700 dark:bg-pink-900/50 dark:text-pink-300">
-                  BTC Pochta:
-                </span>
-                Filial #{order.data.btcPostBranchNumber}
-              </p>
-            ) : null}
-            {order.data.note ? (
-              <p className="shop-muted text-sm italic">Izoh: {order.data.note}</p>
-            ) : null}
-            {order.data.cancelReason ? (
-              <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-300">
-                Bekor qilish sababi: {order.data.cancelReason}
-              </p>
-            ) : null}
-          </section>
+          <section className="glass-card overflow-hidden rounded-3xl p-5 sm:p-6 transition-all space-y-4">
+            <div className="flex items-center gap-3 border-b border-[var(--app-border)] pb-3.5">
+              <span className="grid size-10 place-items-center rounded-2xl bg-gradient-to-tr from-pink-500 to-rose-400 text-white shadow-md shadow-pink-500/20">
+                <Truck className="size-5" />
+              </span>
+              <div>
+                <h2 className="text-base font-black tracking-tight sm:text-lg">Yetkazib berish</h2>
+                <p className="shop-muted text-xs">Buyurtma yuboriladigan manzil va bog‘lanish</p>
+              </div>
+            </div>
 
-          <OrderPaymentCard orderId={order.data.id} />
+            <div className="space-y-3 pt-1 text-sm">
+              {/* Telefon */}
+              <div className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--app-border)] bg-white/40 p-3.5 dark:bg-slate-900/40">
+                <div className="flex items-center gap-3 min-w-0">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-pink-100/80 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300">
+                    <Phone className="size-4" />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Telefon raqam</p>
+                    <p className="font-bold text-slate-900 dark:text-slate-100 truncate">
+                      {order.data.phone ?? 'Ko‘rsatilmagan'}
+                    </p>
+                  </div>
+                </div>
+                {order.data.phone ? (
+                  <a
+                    href={`tel:${order.data.phone}`}
+                    className="shrink-0 rounded-xl bg-pink-50 px-3 py-1.5 text-xs font-bold text-pink-700 transition hover:bg-pink-100 dark:bg-pink-950/60 dark:text-pink-300 dark:hover:bg-pink-900/60"
+                  >
+                    Qo‘ng‘iroq
+                  </a>
+                ) : null}
+              </div>
+
+              {/* Manzil */}
+              <div className="flex items-start gap-3 rounded-2xl border border-[var(--app-border)] bg-white/40 p-3.5 dark:bg-slate-900/40">
+                <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-indigo-100/80 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
+                  <MapPin className="size-4" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Yetkazib berish manzili</p>
+                  <p className="font-bold text-slate-900 dark:text-slate-100 leading-snug">
+                    {order.data.deliveryAddress ?? 'Ko‘rsatilmagan'}
+                  </p>
+                </div>
+              </div>
+
+              {/* BTC Pochta Filiali */}
+              {order.data.btcPostBranchNumber ? (
+                <div className="flex items-center justify-between gap-3 rounded-2xl border border-pink-200/60 bg-gradient-to-r from-pink-50/70 via-rose-50/40 to-pink-50/70 p-3.5 dark:border-pink-900/40 dark:from-pink-950/30 dark:via-rose-950/20 dark:to-pink-950/30">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-pink-200 text-pink-800 dark:bg-pink-900 dark:text-pink-200">
+                      <Building2 className="size-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-pink-600 dark:text-pink-400">BTC Pochta</p>
+                      <p className="font-extrabold text-slate-900 dark:text-slate-100">
+                        Filial #{order.data.btcPostBranchNumber}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="rounded-lg bg-pink-600/10 px-2.5 py-1 text-[11px] font-black text-pink-700 dark:bg-pink-400/10 dark:text-pink-300">
+                    Filial
+                  </span>
+                </div>
+              ) : null}
+
+              {/* Izoh */}
+              {order.data.note ? (
+                <div className="flex items-start gap-3 rounded-2xl border border-dashed border-[var(--app-border)] bg-slate-50/50 p-3.5 dark:bg-slate-900/30">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-slate-200/70 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    <MessageSquare className="size-4" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Mijoz izohi</p>
+                    <p className="text-xs italic text-slate-700 dark:text-slate-300 leading-relaxed">
+                      {order.data.note}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Bekor qilish sababi */}
+              {order.data.cancelReason ? (
+                <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50/80 p-3.5 text-sm font-semibold text-red-700 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-300">
+                  <AlertCircle className="size-5 shrink-0 text-red-600 mt-0.5" />
+                  <div>
+                    <p className="font-bold">Buyurtma bekor qilingan</p>
+                    <p className="text-xs font-normal opacity-90 mt-0.5">{order.data.cancelReason}</p>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+          </section>
 
           <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
             <span className="shop-muted flex items-center gap-1.5 text-xs font-mono">

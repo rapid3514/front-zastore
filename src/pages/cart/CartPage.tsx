@@ -27,10 +27,11 @@ export function CartPage() {
     setShowClearConfirm(false)
   }
 
-  function handleRemove(productId: string, name: string) {
-    remove(productId)
+  function handleRemove(productId: string, name: string, size?: string) {
+    remove(productId, size)
     telegramHaptic('light')
-    showToast(`“${name}” savatdan olib tashlandi`)
+    const sizeSuffix = size ? ` (${size})` : ''
+    showToast(`“${name}${sizeSuffix}” savatdan olib tashlandi`)
   }
 
   return (
@@ -53,55 +54,65 @@ export function CartPage() {
       ) : (
         <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_22rem]">
           <div className="space-y-3">
-            {items.map((item) => (
-              <article key={item.productId} className={`shop-cart-item glass-card ${item.availabilityStatus !== 'OUT_OF_STOCK' ? '' : 'opacity-60'}`}>
-                <ShopImage name={item.name} imageUrl={item.imageUrl} className="shop-cart-image" />
-                <div className="flex min-w-0 flex-1 flex-col">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h2 className="truncate font-bold">{item.name}</h2>
-                      <p className="shop-muted mt-1 text-xs">{item.category}</p>
-                      <p className="mt-3 font-black">{formatMoney(item.price)}</p>
-                      <p className={`mt-1 text-xs font-bold ${item.availabilityStatus === 'OUT_OF_STOCK' ? 'text-red-600' : 'text-amber-700 dark:text-amber-400'}`}>
-                        {availabilityLabel(item.availabilityStatus)}
-                      </p>
-                      {item.availabilityStatus === 'ARRIVING_IN_14_DAYS' && item.cargoPrice ? (
-                        <p className="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
-                          Kargo: {formatCargoPrice(item.cargoPrice)}
+            {items.map((item) => {
+              const itemKey = `${item.productId}::${item.size || ''}`
+              return (
+                <article key={itemKey} className={`shop-cart-item glass-card ${item.availabilityStatus !== 'OUT_OF_STOCK' ? '' : 'opacity-60'}`}>
+                  <ShopImage name={item.name} imageUrl={item.imageUrl} className="shop-cart-image" />
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h2 className="truncate font-bold">{item.name}</h2>
+                        <div className="mt-1 flex flex-wrap items-center gap-1.5">
+                          {item.category ? <p className="shop-muted text-xs">{item.category}</p> : null}
+                          {item.size ? (
+                            <span className="inline-block rounded-md bg-pink-100 px-1.5 py-0.5 text-[11px] font-extrabold text-pink-700 dark:bg-pink-900/50 dark:text-pink-300">
+                              O‘lcham: {item.size}
+                            </span>
+                          ) : null}
+                        </div>
+                        <p className="mt-3 font-black">{formatMoney(item.price)}</p>
+                        <p className={`mt-1 text-xs font-bold ${item.availabilityStatus === 'OUT_OF_STOCK' ? 'text-red-600' : 'text-amber-700 dark:text-amber-400'}`}>
+                          {availabilityLabel(item.availabilityStatus)}
                         </p>
-                      ) : null}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemove(item.productId, item.name)}
-                      className="shop-remove"
-                      aria-label={`${item.name}ni savatdan o‘chirish`}
-                    >
-                      <Trash2 size={17} />
-                    </button>
-                  </div>
-                  <div className="mt-auto pt-3">
-                    <div className="shop-quantity">
+                        {item.availabilityStatus === 'ARRIVING_IN_14_DAYS' && item.cargoPrice ? (
+                          <p className="mt-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                            Kargo: {formatCargoPrice(item.cargoPrice)}
+                          </p>
+                        ) : null}
+                      </div>
                       <button
                         type="button"
-                        onClick={() => { decrease(item.productId); telegramHaptic('light') }}
-                        aria-label={`${item.name} miqdorini kamaytirish`}
+                        onClick={() => handleRemove(item.productId, item.name, item.size)}
+                        className="shop-remove"
+                        aria-label={`${item.name}ni savatdan o‘chirish`}
                       >
-                        <Minus size={15} />
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button
-                        type="button"
-                        onClick={() => { increase(item.productId); telegramHaptic('light') }}
-                        aria-label={`${item.name} miqdorini oshirish`}
-                      >
-                        <Plus size={15} />
+                        <Trash2 size={17} />
                       </button>
                     </div>
+                    <div className="mt-auto pt-3">
+                      <div className="shop-quantity">
+                        <button
+                          type="button"
+                          onClick={() => { decrease(item.productId, item.size); telegramHaptic('light') }}
+                          aria-label={`${item.name} miqdorini kamaytirish`}
+                        >
+                          <Minus size={15} />
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => { increase(item.productId, item.size); telegramHaptic('light') }}
+                          aria-label={`${item.name} miqdorini oshirish`}
+                        >
+                          <Plus size={15} />
+                        </button>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              )
+            })}
           </div>
           <aside className="shop-cart-summary glass-card">
             <div><span>Jami:</span><strong>{formatMoney(subtotal)}</strong></div>
