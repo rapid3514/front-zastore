@@ -44,6 +44,7 @@ const orderSchema = z.object({
     lastName: z.string().nullable().optional(),
     username: z.string().nullable().optional(),
     phone: z.string().nullable().optional(),
+    telegramId: z.string().nullable().optional(),
   }),
   phone: z.string().nullable(),
   deliveryAddress: z.string().nullable(),
@@ -121,6 +122,10 @@ export const ordersApi = {
   },
   async cancel(id: string, reason?: string) {
     const { data } = await api.patch<unknown>(`/orders/${id}/cancel`, reason ? { reason } : undefined)
+    return orderSchema.parse(data)
+  },
+  async updatePhone(id: string, phone: string) {
+    const { data } = await api.patch<unknown>(`/orders/${id}/phone`, { phone })
     return orderSchema.parse(data)
   },
   async manage(params: OrdersParams, signal?: AbortSignal) {

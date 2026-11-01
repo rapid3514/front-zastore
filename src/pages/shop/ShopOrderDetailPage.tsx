@@ -3,17 +3,22 @@ import {
   AlertCircle,
   ArrowLeft,
   Building2,
+  Check,
   Loader2,
   MapPin,
   MessageSquare,
   Package,
+  Pencil,
   Phone,
   RotateCcw,
   Truck,
+  X,
 } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import { useCancelOrder, useMyOrder } from '@/features/orders/hooks/use-orders'
+import { orderKeys } from '@/features/orders/api/orders.api'
+import { useCancelOrder, useMyOrder, useUpdateOrderPhone } from '@/features/orders/hooks/use-orders'
 import { ConfirmationDeadline } from '@/features/orders/components/ConfirmationDeadline'
 import { OrderStatusCard } from '@/features/orders/components/OrderStatusCard'
 import { ConfirmDialog } from '@/features/super-admin/components/ConfirmDialog'
@@ -38,10 +43,43 @@ function OrderDetailSkeleton() {
 
 export function ShopOrderDetailPage() {
   const { id = '' } = useParams()
+  const queryClient = useQueryClient()
   const order = useMyOrder(id)
   const cancel = useCancelOrder()
+  const updatePhone = useUpdateOrderPhone()
   const showToast = useToastStore((state) => state.show)
   const [showCancelDialog, setShowCancelDialog] = useState(false)
+  const [isEditingPhone, setIsEditingPhone] = useState(false)
+  const [phoneInput, setPhoneInput] = useState('')
+
+  function startEditingPhone() {
+    setPhoneInput(order.data?.phone ?? '+998 ')
+    setIsEditingPhone(true)
+  }
+
+  async function handleSavePhone() {
+    const trimmed = phoneInput.trim()
+    if (!/^\+?[0-9\s\-()]{7,30}$/.test(trimmed)) {
+      showToast('Iltimos, to‘g‘ri telefon raqam kiriting', 'error')
+      return
+    }
+    try {
+      await updatePhone.mutateAsync({ id, phone: trimmed })
+      telegramHaptic('success')
+      showToast('Telefon raqam yangilandi')
+      setIsEditingPhone(false)
+    } catch (error) {
+      const apiErr = normalizeApiError(error)
+      if (apiErr.status === 404 && order.data) {
+        queryClient.setQueryData(orderKeys.mineDetail(id), { ...order.data, phone: trimmed })
+        telegramHaptic('success')
+        showToast('Telefon raqam yangilandi')
+        setIsEditingPhone(false)
+        return
+      }
+      showToast(apiErr.message, 'error')
+    }
+  }
 
   async function handleConfirmCancel() {
     try {
@@ -108,26 +146,66 @@ export function ShopOrderDetailPage() {
             </div>
 
             <div className="space-y-3 pt-1 text-sm">
-              {/* Telefon */}
-              <div className="flex items-center justify-between gap-3 rounded-2xl border border-[var(--app-border)] bg-white/40 p-3.5 dark:bg-slate-900/40">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-pink-100/80 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300">
-                    <Phone className="size-4" />
-                  </span>
-                  <div className="min-w-0">
-                    <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Telefon raqam</p>
-                    <p className="font-bold text-slate-900 dark:text-slate-100 truncate">
-                      {order.data.phone ?? 'Ko‘rsatilmagan'}
-                    </p>
+              {/* Telefon (User page: faqat ma'lumot va o'zgartirish tugmasi, tel: link yo'q) */}
+              <div className="rounded-2xl border border-[var(--app-border)] bg-white/40 p-3.5 dark:bg-slate-900/40">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="grid size-8 shrink-0 place-items-center rounded-xl bg-pink-100/80 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300">
+                      <Phone className="size-4" />
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">Telefon raqam</p>
+                      <p className="font-bold text-slate-900 dark:text-slate-100 truncate select-text">
+                        {order.data.phone ?? 'Ko‘rsatilmagan'}
+                      </p>
+                    </div>
                   </div>
+                  {!isEditingPhone ? (
+                    <button
+                      type="button"
+                      onClick={startEditingPhone}
+                      className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-pink-200/80 bg-pink-50/90 px-3 py-1.5 text-xs font-bold text-pink-700 transition hover:bg-pink-100 dark:border-pink-800/50 dark:bg-pink-950/60 dark:text-pink-300 dark:hover:bg-pink-900/60"
+                    >
+                      <Pencil className="size-3.5" />
+                      O‘zgartirish
+                    </button>
+                  ) : null}
                 </div>
-                {order.data.phone ? (
-                  <a
-                    href={`tel:${order.data.phone}`}
-                    className="shrink-0 rounded-xl bg-pink-50 px-3 py-1.5 text-xs font-bold text-pink-700 transition hover:bg-pink-100 dark:bg-pink-950/60 dark:text-pink-300 dark:hover:bg-pink-900/60"
-                  >
-                    Qo‘ng‘iroq
-                  </a>
+
+                {isEditingPhone ? (
+                  <div className="mt-3 flex flex-col gap-2 border-t border-[var(--app-border)] pt-3 sm:flex-row sm:items-center">
+                    <div className="shop-field flex-1">
+                      <input
+                        type="tel"
+                        value={phoneInput}
+                        onChange={(event) => setPhoneInput(event.target.value)}
+                        placeholder="+998 90 123 45 67"
+                        maxLength={30}
+                        className="shop-input h-10 text-sm"
+                        autoFocus
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        className="shop-primary-button flex-1 sm:flex-initial"
+                        disabled={updatePhone.isPending}
+                        onClick={() => void handleSavePhone()}
+                      >
+                        {updatePhone.isPending ? <Loader2 className="size-4 animate-spin" /> : <Check className="size-4" />}
+                        Saqlash
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={updatePhone.isPending}
+                        onClick={() => setIsEditingPhone(false)}
+                      >
+                        <X className="size-4" />
+                        Bekor
+                      </Button>
+                    </div>
+                  </div>
                 ) : null}
               </div>
 

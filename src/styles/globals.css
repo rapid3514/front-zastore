@@ -2072,3 +2072,23 @@ button, a { -webkit-tap-highlight-color: transparent; }
   }
 }
 
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  border: 1px solid var(--lumiera-border);
+  border-radius: 999px;
+  background: var(--lumiera-glass);
+  padding: .5rem .95rem;
+  color: var(--lumiera-ink);
+  font-size: .82rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition: transform 140ms ease, background-color 140ms ease;
+}
+
+.back-link:hover {
+  transform: translateX(-2px);
+}
+
+

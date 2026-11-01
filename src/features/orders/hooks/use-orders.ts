@@ -34,6 +34,19 @@ export function useCancelOrder() {
   } })
 }
 
+export function useUpdateOrderPhone() {
+  const client = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, phone }: { id: string; phone: string }) => ordersApi.updatePhone(id, phone),
+    onSuccess: (updatedOrder, variables) => {
+      client.setQueryData(orderKeys.mineDetail(variables.id), updatedOrder)
+      client.setQueryData(orderKeys.manageDetail(variables.id), updatedOrder)
+      void client.invalidateQueries({ queryKey: orderKeys.mineLists() })
+      void client.invalidateQueries({ queryKey: orderKeys.manageLists() })
+    },
+  })
+}
+
 export function useManageOrders(params: OrdersParams = {}) {
   return useQuery({ queryKey: orderKeys.manage(params), queryFn: ({ signal }) => ordersApi.manage(params, signal) })
 }
