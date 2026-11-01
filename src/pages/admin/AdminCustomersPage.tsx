@@ -20,7 +20,11 @@ export function AdminCustomersPage() {
 
   return (
     <div className="sa-page-container space-y-6">
-      <header><p className="sa-eyebrow">Foydalanuvchilar</p><h1 className="sa-page-title">Customerlar</h1><p className="sa-page-description">Mijozlarni qidiring va online holatini kuzating.</p></header>
+      <header>
+        <p className="sa-eyebrow">Foydalanuvchilar</p>
+        <h1 className="sa-page-title">Mijozlar</h1>
+        <p className="sa-page-description">Do‘kon mijozlarini qidiring va ularning online holatini kuzating.</p>
+      </header>
       <DirectoryFilters
         search={search}
         onSearchChange={(value) => { setSearch(value); setPage(1) }}

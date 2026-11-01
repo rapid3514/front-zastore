@@ -9,6 +9,7 @@ import { useCreateOrder } from '@/features/orders/hooks/use-orders'
 import { ShopImage } from '@/features/shop/components/ShopImage'
 import { normalizeApiError } from '@/shared/api/api-error'
 import { formatCargoPrice, formatMoney } from '@/shared/lib/format'
+import { telegramHaptic } from '@/shared/telegram/telegram'
 import { useToastStore } from '@/shared/ui/toast-store'
 
 function OrderPageSkeleton() {
@@ -77,9 +78,11 @@ export function OrderPage() {
         deliveryAddress: deliveryAddress.trim(),
         btcPostBranchNumber: btcPostBranchNumber.trim(),
       })
+      telegramHaptic('success')
       showToast('Buyurtma muvaffaqiyatli yaratildi ✅')
       navigate(`/orders/${order.id}`, { replace: true })
     } catch (error) {
+      telegramHaptic('error')
       setSubmitError(normalizeApiError(error).message)
     } finally {
       submitting.current = false
@@ -103,24 +106,38 @@ export function OrderPage() {
 
       <section className="shop-detail-copy glass-card">
         <span className="shop-sale-pill">To‘g‘ridan-to‘g‘ri buyurtma</span>
-        <h1>{product.name}</h1>
-        <p className="mt-2 text-sm font-semibold">Narxi</p>
-        <strong className="shop-detail-price">{formatMoney(product.price)}</strong>
-        {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? <p className="mt-2 text-sm font-semibold text-amber-700">Kargo narxi: {formatCargoPrice(product.cargoPrice)} (buyurtma jamiga kirmaydi)</p> : null}
+        <h1 className="mt-2 text-2xl font-black">{product.name}</h1>
+        <p className="mt-2 text-sm font-semibold opacity-75">Narxi</p>
+        <strong className="shop-detail-price block text-2xl font-black text-[var(--shop-accent-strong)]">{formatMoney(product.price)}</strong>
+        {product.availabilityStatus === 'ARRIVING_IN_14_DAYS' && product.cargoPrice ? (
+          <p className="mt-2 text-sm font-semibold text-amber-700 dark:text-amber-400">
+            Kargo narxi: {formatCargoPrice(product.cargoPrice)} (buyurtma jamiga kirmaydi)
+          </p>
+        ) : null}
 
-        <span className={`shop-availability ${canOrder ? 'shop-availability-open' : ''}`}>
+        <span className={`shop-availability mt-3 inline-block ${canOrder ? 'shop-availability-open' : ''}`}>
           {availabilityLabel(product.availabilityStatus)}
         </span>
 
         <form className="mt-6 space-y-4" onSubmit={(event) => { event.preventDefault(); void submitOrder() }}>
           <div className="flex items-center justify-between gap-4">
-            <span className="font-bold">Quantity</span>
+            <span className="font-bold text-slate-800 dark:text-slate-200">Miqdor</span>
             <div className="shop-quantity">
-              <button type="button" disabled={quantity <= 1 || createOrder.isPending} onClick={() => setQuantity((value) => Math.max(1, value - 1))} aria-label="Miqdorni kamaytirish">
+              <button
+                type="button"
+                disabled={quantity <= 1 || createOrder.isPending}
+                onClick={() => { setQuantity((value) => Math.max(1, value - 1)); telegramHaptic('light') }}
+                aria-label="Miqdorni kamaytirish"
+              >
                 <Minus size={16} />
               </button>
-              <span aria-live="polite">{quantity}</span>
-              <button type="button" disabled={!canOrder || createOrder.isPending} onClick={() => setQuantity((value) => value + 1)} aria-label="Miqdorni oshirish">
+              <span aria-live="polite" className="font-bold">{quantity}</span>
+              <button
+                type="button"
+                disabled={!canOrder || createOrder.isPending}
+                onClick={() => { setQuantity((value) => value + 1); telegramHaptic('light') }}
+                aria-label="Miqdorni oshirish"
+              >
                 <Plus size={16} />
               </button>
             </div>
@@ -128,23 +145,40 @@ export function OrderPage() {
 
           <label className="shop-field">
             <span>Yetkazib berish manzili *</span>
-            <input className="shop-input" required maxLength={255} value={deliveryAddress} onChange={(event) => setDeliveryAddress(event.target.value)} disabled={createOrder.isPending} placeholder="Manzilni kiriting" autoComplete="street-address" />
+            <input
+              className="shop-input"
+              required
+              maxLength={255}
+              value={deliveryAddress}
+              onChange={(event) => setDeliveryAddress(event.target.value)}
+              disabled={createOrder.isPending}
+              placeholder="Manzilni kiriting"
+              autoComplete="street-address"
+            />
           </label>
           <label className="shop-field">
             <span>BTC pochta filial raqami *</span>
-            <input className="shop-input" required maxLength={50} value={btcPostBranchNumber} onChange={(event) => setBtcPostBranchNumber(event.target.value)} disabled={createOrder.isPending} placeholder="Filial raqamini kiriting" />
+            <input
+              className="shop-input"
+              required
+              maxLength={50}
+              value={btcPostBranchNumber}
+              onChange={(event) => setBtcPostBranchNumber(event.target.value)}
+              disabled={createOrder.isPending}
+              placeholder="Masalan: 12 yoki Chilonzor filiali"
+            />
           </label>
 
           <div className="flex items-center justify-between border-t border-[var(--app-border)] pt-4 text-lg">
             <span className="font-bold">Jami:</span>
-            <strong>{formatMoney(total)}</strong>
+            <strong className="text-[var(--shop-accent-strong)]">{formatMoney(total)}</strong>
           </div>
 
           {submitError ? <p role="alert" className="text-sm font-semibold text-red-600">{submitError}</p> : null}
 
           <button type="submit" disabled={!canOrder || createOrder.isPending} className="shop-primary-button w-full">
             {createOrder.isPending ? <Loader2 className="size-4 animate-spin" /> : <ShoppingCart className="size-4" />}
-            {createOrder.isPending ? 'Buyurtma yuborilmoqda...' : 'Zakazni tasdiqlash'}
+            {createOrder.isPending ? 'Buyurtma yuborilmoqda...' : 'Buyurtmani tasdiqlash'}
           </button>
         </form>
       </section>

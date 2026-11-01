@@ -80,28 +80,103 @@ export function AdminWorkHoursPage() {
       <header>
         <p className="sa-eyebrow">Do‘kon sozlamalari</p>
         <h1 className="sa-page-title">Ish vaqti</h1>
-        <p className="sa-page-description">Buyurtmalar qabul qilinadigan vaqtlarni belgilang.</p>
+        <p className="sa-page-description">Buyurtmalar qabul qilinadigan vaqtlar va ish jadvalini belgilang.</p>
       </header>
-      {scheduleQuery.isLoading ? <div className="grid gap-3 md:grid-cols-2">{weekDays.map((day) => <div key={day} className="sa-glass h-40 animate-pulse rounded-3xl" />)}</div> : null}
-      {scheduleQuery.isError ? <div className="sa-glass rounded-3xl p-6 text-center text-red-600">{normalizeApiError(scheduleQuery.error).message}<button type="button" className="ml-2 font-bold underline" onClick={() => void scheduleQuery.refetch()}><RefreshCw className="mr-1 inline size-4" />Qayta urinish</button></div> : null}
-      {!scheduleQuery.isLoading && !scheduleQuery.isError ? <>
+
+      {scheduleQuery.isLoading ? (
         <div className="grid gap-3 md:grid-cols-2">
-          {schedule.map((day) => <GlassCard key={day.dayOfWeek} className="sa-glass rounded-3xl p-5">
-            <div className="flex items-center justify-between gap-3">
-              <div><h2 className="text-lg font-black text-slate-950">{weekDayLabels[day.dayOfWeek]}</h2><p className={`mt-1 text-sm font-bold ${day.isOpen ? 'text-emerald-600' : 'text-slate-500'}`}>{day.isOpen ? 'Ochiq' : 'Yopiq'}</p></div>
-              <button type="button" role="switch" aria-checked={day.isOpen} onClick={() => void persistSchedule(updateDay(day.dayOfWeek, { isOpen: !day.isOpen, ...(!day.isOpen ? { openTime: day.openTime ?? '09:00', closeTime: day.closeTime ?? '18:00' } : { openTime: null, closeTime: null }) }))} className={`work-hours-switch ${day.isOpen ? 'work-hours-switch-active' : ''}`}><span /></button>
-            </div>
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <label className="text-sm font-bold text-slate-700">Boshlanish<input type="time" value={day.openTime ?? ''} disabled={!day.isOpen} onInput={(event) => updateDay(day.dayOfWeek, { openTime: event.currentTarget.value || null })} onBlur={() => void persistSchedule(latestSchedule.current)} className="sa-input mt-2" /></label>
-              <label className="text-sm font-bold text-slate-700">Tugash<input type="time" value={day.closeTime ?? ''} disabled={!day.isOpen} onInput={(event) => updateDay(day.dayOfWeek, { closeTime: event.currentTarget.value || null })} onBlur={() => void persistSchedule(latestSchedule.current)} className="sa-input mt-2" /></label>
-            </div>
-          </GlassCard>)}
+          {weekDays.map((day) => <div key={day} className="sa-glass h-40 animate-pulse rounded-3xl" />)}
         </div>
-        <div className="flex flex-col gap-3">
-          {validationError ? <p className="text-sm font-bold text-red-600">{validationError}</p> : null}
-          <Button type="button" onClick={() => void handleSave()} disabled={update.isPending || scheduleQuery.isLoading} className="w-full sm:w-auto">{update.isPending ? <><Loader2 className="size-4 animate-spin" />Saqlanmoqda...</> : <><Clock3 className="size-4" />Saqlash</>}</Button>
+      ) : null}
+
+      {scheduleQuery.isError ? (
+        <div className="sa-glass rounded-3xl p-6 text-center text-red-600">
+          {normalizeApiError(scheduleQuery.error).message}
+          <button type="button" className="ml-2 font-bold underline" onClick={() => void scheduleQuery.refetch()}>
+            <RefreshCw className="mr-1 inline size-4" />Qayta urinish
+          </button>
         </div>
-      </> : null}
+      ) : null}
+
+      {!scheduleQuery.isLoading && !scheduleQuery.isError ? (
+        <>
+          <div className="grid gap-3 md:grid-cols-2">
+            {schedule.map((day) => (
+              <GlassCard key={day.dayOfWeek} className="sa-glass rounded-3xl p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-lg font-black text-slate-950 dark:text-slate-100">{weekDayLabels[day.dayOfWeek]}</h2>
+                    <p className={`mt-1 text-sm font-bold ${day.isOpen ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-400'}`}>
+                      {day.isOpen ? 'Ochiq' : 'Yopiq'}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={day.isOpen}
+                    aria-label={`${weekDayLabels[day.dayOfWeek]} ish kuni holati`}
+                    onClick={() =>
+                      void persistSchedule(
+                        updateDay(day.dayOfWeek, {
+                          isOpen: !day.isOpen,
+                          ...(!day.isOpen ? { openTime: day.openTime ?? '09:00', closeTime: day.closeTime ?? '18:00' } : { openTime: null, closeTime: null }),
+                        }),
+                      )
+                    }
+                    className={`work-hours-switch ${day.isOpen ? 'work-hours-switch-active' : ''}`}
+                  >
+                    <span />
+                  </button>
+                </div>
+                <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                    Boshlanish
+                    <input
+                      type="time"
+                      value={day.openTime ?? ''}
+                      disabled={!day.isOpen}
+                      onInput={(event) => updateDay(day.dayOfWeek, { openTime: event.currentTarget.value || null })}
+                      onBlur={() => void persistSchedule(latestSchedule.current)}
+                      className="sa-input mt-2"
+                    />
+                  </label>
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300">
+                    Tugash
+                    <input
+                      type="time"
+                      value={day.closeTime ?? ''}
+                      disabled={!day.isOpen}
+                      onInput={(event) => updateDay(day.dayOfWeek, { closeTime: event.currentTarget.value || null })}
+                      onBlur={() => void persistSchedule(latestSchedule.current)}
+                      className="sa-input mt-2"
+                    />
+                  </label>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {validationError ? <p className="text-sm font-bold text-red-600">{validationError}</p> : null}
+            <Button
+              type="button"
+              onClick={() => void handleSave()}
+              disabled={update.isPending || scheduleQuery.isLoading}
+              className="w-full sm:w-auto"
+            >
+              {update.isPending ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" />Saqlanmoqda...
+                </>
+              ) : (
+                <>
+                  <Clock3 className="size-4" />Jadvalni saqlash
+                </>
+              )}
+            </Button>
+          </div>
+        </>
+      ) : null}
     </main>
   )
 }

@@ -29,18 +29,42 @@ function CategoryImageUploader({ controller, onError, disabled }: { controller: 
     if (result.rejectedFiles.length) onError(result.rejectedFiles[0].reason.message)
   }
 
-  return <section className="media-uploader sa-glass rounded-2xl p-4" aria-label="Kategoriya rasmi">
-    <div className="flex flex-wrap items-start justify-between gap-3">
-      <div><h3 className="font-extrabold text-slate-950">Kategoriya rasmi</h3><p className="mt-1 text-xs text-slate-500">Rasm ImageKit’ga yuklanadi. JPEG, PNG, WebP yoki AVIF, ko‘pi bilan {MEDIA_LIMITS.imageMaxBytes / 1024 / 1024} MB.</p></div>
-      <input ref={inputRef} type="file" accept={MEDIA_ACCEPT.image} disabled={disabled || isUploading} className="sr-only" onChange={(event) => void selectImage(event)} />
-      <Button type="button" variant="outline" disabled={disabled || isUploading} onClick={() => inputRef.current?.click()}><ImagePlus className="size-4" />{image ? 'Rasmni almashtirish' : 'Rasm tanlash'}</Button>
-    </div>
-    {image ? <div className="mt-4 flex items-start gap-3 rounded-xl border border-white/70 bg-white/55 p-3">
-      <img src={image.previewUrl} alt="Kategoriya rasmi previewi" className="size-20 shrink-0 rounded-lg object-cover" />
-      <div className="min-w-0 flex-1"><p className="truncate text-sm font-bold text-slate-700">{image.file?.name ?? 'Kategoriya rasmi'}</p>{isUploading ? <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-amber-700"><Loader2 className="size-3 animate-spin" />Yuklanmoqda... {image.progress}%</p> : image.status === 'failed' ? <p className="mt-1 text-xs font-semibold text-red-600">{image.error ?? 'Rasm yuklanmadi.'}</p> : <p className="mt-1 text-xs font-semibold text-emerald-700">ImageKit’ga yuklandi</p>}</div>
-      <Button type="button" variant="outline" className="shrink-0 text-red-600" disabled={disabled || isUploading} onClick={() => void controller.remove(image.localId)} aria-label="Kategoriya rasmini olib tashlash"><Trash2 className="size-4" /></Button>
-    </div> : null}
-  </section>
+  return (
+    <section className="media-uploader sa-glass rounded-2xl p-4" aria-label="Kategoriya rasmi">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h3 className="font-extrabold text-slate-950 dark:text-slate-100">Kategoriya rasmi</h3>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+            Rasm ImageKit’ga yuklanadi. JPEG, PNG, WebP yoki AVIF, ko‘pi bilan {MEDIA_LIMITS.imageMaxBytes / 1024 / 1024} MB.
+          </p>
+        </div>
+        <input ref={inputRef} type="file" accept={MEDIA_ACCEPT.image} disabled={disabled || isUploading} className="sr-only" onChange={(event) => void selectImage(event)} />
+        <Button type="button" variant="outline" disabled={disabled || isUploading} onClick={() => inputRef.current?.click()}>
+          <ImagePlus className="size-4" />{image ? 'Rasmni almashtirish' : 'Rasm tanlash'}
+        </Button>
+      </div>
+      {image ? (
+        <div className="mt-4 flex items-start gap-3 rounded-xl border border-white/70 bg-white/55 p-3 dark:border-slate-800 dark:bg-slate-900/60">
+          <img src={image.previewUrl} alt="Kategoriya rasmi previewi" className="size-20 shrink-0 rounded-lg object-cover" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-bold text-slate-700 dark:text-slate-200">{image.file?.name ?? 'Kategoriya rasmi'}</p>
+            {isUploading ? (
+              <p className="mt-1 flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                <Loader2 className="size-3 animate-spin" />Yuklanmoqda... {image.progress}%
+              </p>
+            ) : image.status === 'failed' ? (
+              <p className="mt-1 text-xs font-semibold text-red-600">{image.error ?? 'Rasm yuklanmadi.'}</p>
+            ) : (
+              <p className="mt-1 text-xs font-semibold text-emerald-700 dark:text-emerald-400">ImageKit’ga yuklandi</p>
+            )}
+          </div>
+          <Button type="button" variant="outline" className="shrink-0 text-red-600" disabled={disabled || isUploading} onClick={() => void controller.remove(image.localId)} aria-label="Kategoriya rasmini olib tashlash">
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
+      ) : null}
+    </section>
+  )
 }
 
 function CategoryForm({ category, onClose }: { category: Category | null; onClose: () => void }) {
@@ -81,12 +105,24 @@ function CategoryForm({ category, onClose }: { category: Category | null; onClos
   return (
     <ModalShell open title={category ? 'Kategoriyani tahrirlash' : 'Kategoriya qo‘shish'} onOpenChange={(open) => { if (!open && !pending) void closeWithCleanup() }}>
       <form onSubmit={submit} className="space-y-4">
-        <label className="block text-sm font-bold text-slate-700">Nomi *<input required minLength={2} maxLength={100} value={name} onChange={(event) => setName(event.target.value)} className="sa-input mt-2" /></label>
-        <label className="block text-sm font-bold text-slate-700">Tavsif<textarea maxLength={500} value={description} onChange={(event) => setDescription(event.target.value)} className="sa-input mt-2 min-h-24" /></label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+          Nomi *<input required minLength={2} maxLength={100} value={name} onChange={(event) => setName(event.target.value)} className="sa-input mt-2" />
+        </label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+          Tavsif<textarea maxLength={500} value={description} onChange={(event) => setDescription(event.target.value)} className="sa-input mt-2 min-h-24" />
+        </label>
         <CategoryImageUploader controller={mediaController} onError={setError} disabled={pending} />
-        <label className="block text-sm font-bold text-slate-700">Tartib<input type="number" min={0} step={1} value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} className="sa-input mt-2" /></label>
+        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300">
+          Tartib<input type="number" min={0} step={1} value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} className="sa-input mt-2" />
+        </label>
         {error ? <p role="alert" className="text-sm font-semibold text-red-600">{error}</p> : null}
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end"><Button type="button" variant="outline" disabled={pending} onClick={() => void closeWithCleanup()}>Bekor qilish</Button><Button type="submit" disabled={pending || isUploading || hasFailedImage}>{pending || isUploading ? <Loader2 className="size-4 animate-spin" /> : null}{pending ? 'Saqlanmoqda...' : isUploading ? 'Rasm yuklanmoqda...' : 'Saqlash'}</Button></div>
+        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <Button type="button" variant="outline" disabled={pending} onClick={() => void closeWithCleanup()}>Bekor qilish</Button>
+          <Button type="submit" disabled={pending || isUploading || hasFailedImage}>
+            {pending || isUploading ? <Loader2 className="size-4 animate-spin" /> : null}
+            {pending ? 'Saqlanmoqda...' : isUploading ? 'Rasm yuklanmoqda...' : 'Saqlash'}
+          </Button>
+        </div>
       </form>
     </ModalShell>
   )
@@ -97,36 +133,118 @@ export function AdminCategoriesPage() {
   const { setActive, remove } = useCategoryMutations()
   const [formCategory, setFormCategory] = useState<Category | null | undefined>(undefined)
   const [deleting, setDeleting] = useState<Category | null>(null)
+  const [togglingId, setTogglingId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const showToast = useToastStore((state) => state.show)
   const visible = categories.data?.filter((category) => category.name.toLocaleLowerCase('uz').includes(search.trim().toLocaleLowerCase('uz'))) ?? []
 
   async function changeActive(category: Category) {
-    try { await setActive.mutateAsync({ id: category.id, active: !category.isActive }); showToast(category.isActive ? 'Kategoriya nofaol qilindi' : 'Kategoriya faollashtirildi') }
-    catch (cause) { showToast(catalogError(cause), 'error') }
+    setTogglingId(category.id)
+    try {
+      await setActive.mutateAsync({ id: category.id, active: !category.isActive })
+      showToast(category.isActive ? 'Kategoriya nofaol qilindi' : 'Kategoriya faollashtirildi')
+    } catch (cause) {
+      showToast(catalogError(cause), 'error')
+    } finally {
+      setTogglingId(null)
+    }
   }
 
   async function deleteCategory() {
     if (!deleting) return
-    try { await remove.mutateAsync(deleting.id); showToast('Kategoriya o‘chirildi'); setDeleting(null) }
-    catch (cause) { showToast(catalogError(cause), 'error'); setDeleting(null) }
+    try {
+      await remove.mutateAsync(deleting.id)
+      showToast('Kategoriya o‘chirildi')
+      setDeleting(null)
+    } catch (cause) {
+      showToast(catalogError(cause), 'error')
+      setDeleting(null)
+    }
   }
 
   return (
     <div className="sa-page-container space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-4"><div><p className="sa-eyebrow">Katalog boshqaruvi</p><h1 className="sa-page-title">Kategoriyalar</h1><p className="sa-page-description">Mahsulotlar mijoz katalogida shu kategoriyalar bo‘yicha ko‘rinadi.</p></div><Button type="button" onClick={() => setFormCategory(null)}><Plus className="size-4" />Kategoriya qo‘shish</Button></header>
-      <label className="sa-search max-w-md"><Search className="size-4 text-slate-400" /><span className="sr-only">Kategoriya qidirish</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Kategoriya qidirish..." /></label>
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="sa-eyebrow">Katalog boshqaruvi</p>
+          <h1 className="sa-page-title">Kategoriyalar</h1>
+          <p className="sa-page-description">Mahsulotlar mijoz katalogida shu kategoriyalar bo‘yicha ko‘rinadi.</p>
+        </div>
+        <Button type="button" onClick={() => setFormCategory(null)}>
+          <Plus className="size-4" />Kategoriya qo‘shish
+        </Button>
+      </header>
+
+      <label className="sa-search max-w-md">
+        <Search className="size-4 text-slate-400" />
+        <span className="sr-only">Kategoriya qidirish</span>
+        <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Kategoriya qidirish..." />
+      </label>
+
       {categories.isLoading ? <p className="sa-glass rounded-2xl p-5">Kategoriyalar yuklanmoqda...</p> : null}
-      {categories.isError ? <div className="sa-glass rounded-2xl p-5 text-red-600">Kategoriyalarni yuklashda xatolik yuz berdi. <button type="button" className="font-bold underline" onClick={() => void categories.refetch()}>Qayta urinish</button></div> : null}
-      {categories.data && visible.length === 0 ? <p className="sa-glass rounded-2xl p-5 text-slate-600">Hozircha kategoriyalar mavjud emas.</p> : null}
-      <div className="grid gap-3 md:grid-cols-2">{visible.map((category) => (
-        <article key={category.id} className="sa-glass min-w-0 rounded-2xl p-4 sm:p-5">
-          <div className="flex items-start justify-between gap-3"><div className="flex min-w-0 items-start gap-3">{category.imageUrl ? <img src={category.imageUrl} alt="" loading="lazy" decoding="async" className="size-16 shrink-0 rounded-xl object-cover" /> : <div className="grid size-16 shrink-0 place-items-center rounded-xl bg-rose-50 text-rose-400"><FileImage className="size-6" /></div>}<div className="min-w-0"><h2 className="truncate text-lg font-extrabold text-slate-950" title={category.name}>{category.name}</h2><p className="mt-1 line-clamp-2 text-sm text-slate-500">{category.description || 'Tavsif yo‘q'}</p></div></div><span className={`shrink-0 rounded-full px-2 py-1 text-xs font-bold ${category.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-200 text-slate-600'}`}>{category.isActive ? 'Faol' : 'Nofaol'}</span></div>
-          <div className="mt-4 flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => setFormCategory(category)}><Pencil className="size-4" />Tahrirlash</Button><Button type="button" variant="outline" disabled={setActive.isPending} onClick={() => void changeActive(category)}>{category.isActive ? 'Nofaol qilish' : 'Faollashtirish'}</Button><Button type="button" variant="outline" onClick={() => setDeleting(category)} className="text-red-600"><Trash2 className="size-4" />O‘chirish</Button></div>
-        </article>
-      ))}</div>
+      {categories.isError ? (
+        <div className="sa-glass rounded-2xl p-5 text-red-600">
+          Kategoriyalarni yuklashda xatolik yuz berdi.{' '}
+          <button type="button" className="font-bold underline" onClick={() => void categories.refetch()}>Qayta urinish</button>
+        </div>
+      ) : null}
+      {categories.data && visible.length === 0 ? <p className="sa-glass rounded-2xl p-5 text-slate-600 dark:text-slate-400">Hozircha kategoriyalar mavjud emas.</p> : null}
+
+      <div className="grid gap-3 md:grid-cols-2">
+        {visible.map((category) => {
+          const isToggling = togglingId === category.id
+          return (
+            <article key={category.id} className="sa-glass min-w-0 rounded-2xl p-4 sm:p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-3">
+                  {category.imageUrl ? (
+                    <img src={category.imageUrl} alt="" loading="lazy" decoding="async" className="size-16 shrink-0 rounded-xl object-cover" />
+                  ) : (
+                    <div className="grid size-16 shrink-0 place-items-center rounded-xl bg-rose-50 text-rose-400 dark:bg-rose-950/40 dark:text-rose-300">
+                      <FileImage className="size-6" />
+                    </div>
+                  )}
+                  <div className="min-w-0">
+                    <h2 className="truncate text-lg font-extrabold text-slate-950 dark:text-slate-100" title={category.name}>
+                      {category.name}
+                    </h2>
+                    <p className="mt-1 line-clamp-2 text-sm text-slate-500 dark:text-slate-400">
+                      {category.description || 'Tavsif yo‘q'}
+                    </p>
+                  </div>
+                </div>
+                <span className={`shrink-0 rounded-full px-2 py-1 text-xs font-bold ${category.isActive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
+                  {category.isActive ? 'Faol' : 'Nofaol'}
+                </span>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Button type="button" variant="outline" onClick={() => setFormCategory(category)}>
+                  <Pencil className="size-4" />Tahrirlash
+                </Button>
+                <Button type="button" variant="outline" disabled={isToggling} onClick={() => void changeActive(category)}>
+                  {isToggling ? <Loader2 className="size-4 animate-spin" /> : null}
+                  {category.isActive ? 'Nofaol qilish' : 'Faollashtirish'}
+                </Button>
+                <Button type="button" variant="outline" onClick={() => setDeleting(category)} className="text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40">
+                  <Trash2 className="size-4" />O‘chirish
+                </Button>
+              </div>
+            </article>
+          )
+        })}
+      </div>
+
       {formCategory !== undefined ? <CategoryForm category={formCategory} onClose={() => setFormCategory(undefined)} /> : null}
-      <ConfirmDialog open={deleting !== null} title="Kategoriyani o‘chirish" description={`“${deleting?.name ?? ''}” kategoriyasini o‘chirmoqchimisiz?`} confirmLabel="O‘chirish" pending={remove.isPending} danger onConfirm={() => void deleteCategory()} onOpenChange={(open) => { if (!open) setDeleting(null) }} />
+      <ConfirmDialog
+        open={deleting !== null}
+        title="Kategoriyani o‘chirish"
+        description={`“${deleting?.name ?? ''}” kategoriyasini o‘chirmoqchimisiz?`}
+        confirmLabel="O‘chirish"
+        pending={remove.isPending}
+        danger
+        onConfirm={() => void deleteCategory()}
+        onOpenChange={(open) => { if (!open) setDeleting(null) }}
+      />
     </div>
   )
 }

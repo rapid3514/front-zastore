@@ -54,7 +54,8 @@ export function initializeTheme() {
   applyThemeToDocument(useThemeStore.getState().theme)
 }
 
-export function syncThemeFromTelegram(_theme?: ThemeMode) {
-  // Keep the boutique bright unless the customer explicitly chooses dark mode.
-  useThemeStore.getState().setAutomaticTheme('light')
+export function syncThemeFromTelegram(theme?: ThemeMode) {
+  if (theme) {
+    useThemeStore.getState().setAutomaticTheme(theme)
+  }
 }

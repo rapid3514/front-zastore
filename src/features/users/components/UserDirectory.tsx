@@ -18,7 +18,7 @@ interface DirectoryFiltersProps {
 
 const roleFilters: Array<{ value: RoleFilter; label: string }> = [
   { value: 'ALL', label: 'Barchasi' },
-  { value: 'CUSTOMER', label: 'Customer' },
+  { value: 'CUSTOMER', label: 'Mijoz' },
   { value: 'ADMIN', label: 'Admin' },
   { value: 'SUPER_ADMIN', label: 'Super admin' },
 ]
@@ -39,14 +39,14 @@ export function DirectoryFilters({ search, onSearchChange, online, onOnlineChang
       </label>
       {role && onRoleChange ? (
         <div className="mt-3">
-          <p className="mb-2 text-xs font-extrabold uppercase tracking-wider text-slate-500">Rol</p>
+          <p className="mb-2 text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">Rol</p>
           <div className="flex flex-wrap gap-2" aria-label="Rol bo‘yicha filtr">
             {roleFilters.map((item) => <FilterButton key={item.value} selected={role === item.value} onClick={() => onRoleChange(item.value)}>{item.label}</FilterButton>)}
           </div>
         </div>
       ) : null}
       <div className="mt-3">
-        <p className="mb-2 text-xs font-extrabold uppercase tracking-wider text-slate-500">Status</p>
+        <p className="mb-2 text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">Holat</p>
         <div className="flex flex-wrap gap-2" aria-label="Online holati bo‘yicha filtr">
           {onlineFilters.map((item) => <FilterButton key={item.value} selected={online === item.value} onClick={() => onOnlineChange(item.value)}>{item.label}</FilterButton>)}
         </div>
@@ -71,15 +71,20 @@ function UserIdentity({ user, label }: { user: UserListItem; label: string }) {
     <div className="flex min-w-0 items-center gap-3">
       <UserAvatar user={user} />
       <div className="min-w-0">
-        <p className="truncate font-bold text-slate-950">{user.fullName || label}</p>
-        <p className="truncate text-sm text-slate-500">{user.username ? `@${user.username}` : 'Username yo‘q'}</p>
+        <p className="truncate font-bold text-slate-950 dark:text-slate-100">{user.fullName || label}</p>
+        <p className="truncate text-sm text-slate-500 dark:text-slate-400">{user.username ? `@${user.username}` : 'Username yo‘q'}</p>
       </div>
     </div>
   )
 }
 
 function OnlineStatus({ isOnline }: { isOnline: boolean }) {
-  return <span className="inline-flex items-center gap-2 text-sm font-bold text-slate-700"><span className={cn('size-2.5 rounded-full', isOnline ? 'bg-emerald-500' : 'bg-slate-400')} aria-hidden="true" />{isOnline ? 'Online' : 'Offline'}</span>
+  return (
+    <span className="inline-flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300">
+      <span className={cn('size-2.5 rounded-full', isOnline ? 'bg-emerald-500' : 'bg-slate-400')} aria-hidden="true" />
+      {isOnline ? 'Online' : 'Offline'}
+    </span>
+  )
 }
 
 function RoleBadge({ role }: { role: UserListItem['role'] }) {
@@ -90,13 +95,13 @@ function UserCard({ user, showRole }: { user: UserListItem; showRole: boolean })
   return (
     <article className="sa-glass rounded-2xl p-4">
       <div className="flex items-start justify-between gap-3">
-        <UserIdentity user={user} label="Foydalanuvchi" />
+        <UserIdentity user={user} label={showRole ? 'Foydalanuvchi' : 'Mijoz'} />
         {showRole ? <RoleBadge role={user.role} /> : null}
       </div>
-      <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-200/70 pt-4 text-sm">
-        <div><dt className="text-xs font-semibold text-slate-500">Telegram</dt><dd className="mt-1 truncate font-bold text-slate-700">{user.telegramId ?? '—'}</dd></div>
-        <div><dt className="text-xs font-semibold text-slate-500">Status</dt><dd className="mt-1"><OnlineStatus isOnline={user.isOnline} /></dd></div>
-        <div className="col-span-2"><dt className="text-xs font-semibold text-slate-500">Oxirgi faollik</dt><dd className="mt-1 font-bold text-slate-700">{formatLastSeen(user.lastSeenAt, user.isOnline)}</dd></div>
+      <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-slate-200/70 pt-4 text-sm dark:border-slate-800">
+        <div><dt className="text-xs font-semibold text-slate-500 dark:text-slate-400">Telegram</dt><dd className="mt-1 truncate font-bold text-slate-700 dark:text-slate-200">{user.telegramId ?? '—'}</dd></div>
+        <div><dt className="text-xs font-semibold text-slate-500 dark:text-slate-400">Status</dt><dd className="mt-1"><OnlineStatus isOnline={user.isOnline} /></dd></div>
+        <div className="col-span-2"><dt className="text-xs font-semibold text-slate-500 dark:text-slate-400">Oxirgi faollik</dt><dd className="mt-1 font-bold text-slate-700 dark:text-slate-200">{formatLastSeen(user.lastSeenAt, user.isOnline)}</dd></div>
       </dl>
     </article>
   )
@@ -106,16 +111,26 @@ function UserTable({ users, showRole }: { users: UserListItem[]; showRole: boole
   return (
     <div className="sa-glass hidden overflow-x-auto rounded-2xl md:block">
       <table className="w-full min-w-[46rem] text-left">
-        <thead><tr className="text-xs font-extrabold uppercase tracking-wider text-slate-500"><th className="px-5 py-4">{showRole ? 'User' : 'Customer'}</th><th className="px-5 py-4">Telegram</th>{showRole ? <th className="px-5 py-4">Rol</th> : null}<th className="px-5 py-4">Status</th><th className="px-5 py-4">Oxirgi faollik</th></tr></thead>
-        <tbody>{users.map((user) => (
-          <tr key={user.id} className="border-t border-slate-200/70">
-            <td className="px-5 py-4"><UserIdentity user={user} label={showRole ? 'Foydalanuvchi' : 'Customer'} /></td>
-            <td className="px-5 py-4 text-sm font-semibold text-slate-600">{user.telegramId ?? '—'}</td>
-            {showRole ? <td className="px-5 py-4"><RoleBadge role={user.role} /></td> : null}
-            <td className="px-5 py-4"><OnlineStatus isOnline={user.isOnline} /></td>
-            <td className="px-5 py-4 text-sm font-semibold text-slate-600">{formatLastSeen(user.lastSeenAt, user.isOnline)}</td>
+        <thead>
+          <tr className="text-xs font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+            <th className="px-5 py-4">{showRole ? 'Foydalanuvchi' : 'Mijoz'}</th>
+            <th className="px-5 py-4">Telegram</th>
+            {showRole ? <th className="px-5 py-4">Rol</th> : null}
+            <th className="px-5 py-4">Status</th>
+            <th className="px-5 py-4">Oxirgi faollik</th>
           </tr>
-        ))}</tbody>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr key={user.id} className="border-t border-slate-200/70 dark:border-slate-800">
+              <td className="px-5 py-4"><UserIdentity user={user} label={showRole ? 'Foydalanuvchi' : 'Mijoz'} /></td>
+              <td className="px-5 py-4 text-sm font-semibold text-slate-600 dark:text-slate-300">{user.telegramId ?? '—'}</td>
+              {showRole ? <td className="px-5 py-4"><RoleBadge role={user.role} /></td> : null}
+              <td className="px-5 py-4"><OnlineStatus isOnline={user.isOnline} /></td>
+              <td className="px-5 py-4 text-sm font-semibold text-slate-600 dark:text-slate-300">{formatLastSeen(user.lastSeenAt, user.isOnline)}</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   )
@@ -126,12 +141,12 @@ export function UserDirectorySkeleton() {
 }
 
 export function UserDirectoryError({ error, onRetry }: { error: unknown; onRetry: () => void }) {
-  return <div className="sa-glass rounded-2xl p-7 text-center"><h2 className="text-lg font-extrabold text-slate-950">Ma’lumotni yuklab bo‘lmadi</h2><p className="mt-2 text-sm text-slate-600">{normalizeApiError(error).message}</p><Button type="button" variant="outline" onClick={onRetry} className="mt-5">Qayta urinish</Button></div>
+  return <div className="sa-glass rounded-2xl p-7 text-center"><h2 className="text-lg font-extrabold text-slate-950 dark:text-slate-100">Ma’lumotni yuklab bo‘lmadi</h2><p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{normalizeApiError(error).message}</p><Button type="button" variant="outline" onClick={onRetry} className="mt-5">Qayta urinish</Button></div>
 }
 
 export function UserDirectoryResults({ page, showRole }: { page: UsersPage; showRole: boolean }) {
   if (page.data.length === 0) {
-    return <div className="sa-glass rounded-2xl p-8 text-center"><UserRoundX className="mx-auto size-9 text-slate-400" /><h2 className="mt-3 font-extrabold text-slate-950">Mos foydalanuvchi topilmadi</h2><p className="mt-2 text-sm text-slate-500">Qidiruv yoki filtrlarni o‘zgartirib ko‘ring.</p></div>
+    return <div className="sa-glass rounded-2xl p-8 text-center"><UserRoundX className="mx-auto size-9 text-slate-400" /><h2 className="mt-3 font-extrabold text-slate-950 dark:text-slate-100">Mos foydalanuvchi topilmadi</h2><p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Qidiruv yoki filtrlarni o‘zgartirib ko‘ring.</p></div>
   }
 
   return <><div className="grid gap-3 md:hidden">{page.data.map((user) => <UserCard key={user.id} user={user} showRole={showRole} />)}</div><UserTable users={page.data} showRole={showRole} /></>
@@ -143,7 +158,7 @@ export function DirectoryPagination({ page, totalPages, onPageChange }: { page: 
   return (
     <nav className="flex items-center justify-center gap-3" aria-label="Sahifalash">
       <Button type="button" variant="outline" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>Oldingi</Button>
-      <span className="text-sm font-bold text-slate-700" aria-current="page">{page} / {totalPages}</span>
+      <span className="text-sm font-bold text-slate-700 dark:text-slate-300" aria-current="page">{page} / {totalPages}</span>
       <Button type="button" variant="outline" disabled={page >= totalPages} onClick={() => onPageChange(page + 1)}>Keyingi</Button>
     </nav>
   )

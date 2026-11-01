@@ -17,7 +17,7 @@ export interface CartItem {
 
 interface CartState {
   items: CartItem[]
-  addItem: (product: Product) => void
+  addItem: (product: Product, quantity?: number) => void
   removeItem: (productId: string) => void
   increaseQuantity: (productId: string) => void
   decreaseQuantity: (productId: string) => void
@@ -29,13 +29,14 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: [],
-      addItem: (product) => set((state) => {
+      addItem: (product, quantity = 1) => set((state) => {
         if (!canOrderProduct(product)) return state
+        const qty = Math.max(1, Math.floor(quantity))
         const existing = state.items.find((item) => item.productId === product.id)
         if (existing) {
-          return { items: state.items.map((item) => item.productId === product.id ? { ...item, quantity: item.quantity + 1, availabilityStatus: product.availabilityStatus, cargoPrice: product.cargoPrice, price: product.price } : item) }
+          return { items: state.items.map((item) => item.productId === product.id ? { ...item, quantity: item.quantity + qty, availabilityStatus: product.availabilityStatus, cargoPrice: product.cargoPrice, price: product.price } : item) }
         }
-        return { items: [...state.items, { productId: product.id, name: product.name, category: product.category.name, imageUrl: getProductCoverUrl(product), price: product.price, cargoPrice: product.cargoPrice, quantity: 1, availabilityStatus: product.availabilityStatus }] }
+        return { items: [...state.items, { productId: product.id, name: product.name, category: product.category.name, imageUrl: getProductCoverUrl(product), price: product.price, cargoPrice: product.cargoPrice, quantity: qty, availabilityStatus: product.availabilityStatus }] }
       }),
       removeItem: (productId) => set((state) => ({ items: state.items.filter((item) => item.productId !== productId) })),
       increaseQuantity: (productId) => set((state) => ({ items: state.items.map((item) => item.productId === productId ? { ...item, quantity: item.quantity + 1 } : item) })),
